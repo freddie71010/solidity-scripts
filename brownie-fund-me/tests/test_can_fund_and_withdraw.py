@@ -13,9 +13,6 @@ def test_can_fund():
     starting_entrance_fee = fundme.getEntranceFee()
     tx = fundme.fund({"from": account, "value": starting_entrance_fee})
     tx.wait(1)
-    import pdb
-
-    pdb.set_trace()
     # Assert
     assert fundme.addressToAmountFunded(account.address) == starting_entrance_fee
 
