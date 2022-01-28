@@ -22,7 +22,7 @@ contract FundMe {
     }
 
     function fund() public payable {
-        uint256 minimumUSD = 50 * 10**18;
+        uint256 minimumUSD = 50 * 1_000_000_000_000_000_000;
         require(
             getConversionRate(msg.value) >= minimumUSD,
             "You need to spend more ETH!"
@@ -37,14 +37,14 @@ contract FundMe {
     }
 
     function getPrice() public view returns (uint256) {
-        (, int256 answer, , , ) = priceFeed.latestRoundData();
-        return uint256(answer * 10000000000);
+        (, int256 answer, , , ) = priceFeed.latestRoundData(); // returns 8 decimal places
+        return uint256(answer * 10_000_000_000); // add 10 more decimal places to convert this unit to wei (18 zeroes)
     }
 
     function getEntranceFee() public view returns (uint256) {
-        uint256 minUSD = 50 * 10**18;
+        uint256 minUSD = 50 * 1_000_000_000_000_000_000;
         uint256 price = getPrice();
-        uint256 precision = 1 * 10**18;
+        uint256 precision = 1 * 1_000_000_000_000_000_000;
         return (minUSD * precision) / price;
     }
 
@@ -54,7 +54,8 @@ contract FundMe {
         returns (uint256)
     {
         uint256 ethPrice = getPrice();
-        uint256 ethAmountinUsd = (ethPrice * ethAmount) / 1000000000000000000;
+        uint256 ethAmountinUsd = (ethPrice * ethAmount) /
+            1_000_000_000_000_000_000;
         return ethAmountinUsd;
     }
 

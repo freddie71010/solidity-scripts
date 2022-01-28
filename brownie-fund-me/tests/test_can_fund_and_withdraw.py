@@ -10,7 +10,7 @@ def test_can_fund():
     account = get_account()
     # Act
     fundme = deploy_fund_me()
-    starting_entrance_fee = fundme.getEntranceFee()
+    starting_entrance_fee = fundme.getEntranceFee() + 100
     tx = fundme.fund({"from": account, "value": starting_entrance_fee})
     tx.wait(1)
     # Assert
@@ -22,7 +22,7 @@ def test_can_withdraw():
     account = get_account()
     # Act
     fundme = deploy_fund_me()
-    starting_entrance_fee = fundme.getEntranceFee()
+    starting_entrance_fee = fundme.getEntranceFee() + 100
     tx = fundme.fund({"from": account, "value": starting_entrance_fee})
     tx.wait(1)
     tx2 = fundme.withdraw({"from": account})
