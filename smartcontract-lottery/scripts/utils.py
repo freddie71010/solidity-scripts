@@ -6,6 +6,7 @@ from brownie import (
     MockV3Aggregator,
     VRFCoordinatorMock,
     LinkToken,
+    interface
 )
 from web3 import Web3
 
@@ -19,6 +20,9 @@ contract_to_mock = {
     "link_token": LinkToken,
 }
 
+
+def print_line(string, length=100, char='='):
+    print(f"{string} {(length-len(string))*char}")
 
 def get_account(index=None, id=None):
     if index:
@@ -62,8 +66,8 @@ def get_contract(contract_name):
 
 
 def deploy_mocks(decimals=DECIMALS, initial_value=STARTING_PRICE):
-    print(f"The active network is {network.show_active()}")
-    print("Deploying mocks...")
+    print_line(f"The active network is {network.show_active()}", char='-')
+    print_line("Deploying mocks...", char='-')
     MockV3Aggregator.deploy(
         decimals,
         initial_value,
@@ -71,4 +75,16 @@ def deploy_mocks(decimals=DECIMALS, initial_value=STARTING_PRICE):
     )
     link_token = LinkToken.deploy({"from": get_account()})
     VRFCoordinatorMock.deploy(link_token.address, {"from": get_account()})
-    print("Mocks deployed!")
+    print_line("Mocks deployed!", char='-')
+
+
+def fund_with_link(contract_address, account=None, link_token=None, amount=100000000000000000):  # 0.1 Link
+    account = account if account else get_account()
+    link_token = link_token if link_token else get_contract("link_token")
+    tx = link_token.transfer(contract_address, amount, {"from": account})
+    # link_token_contract = interface.LinkTokenInterface(link_token.address)  # interface
+    # tx = link_token_contract.transfer(contract_address, amount, {"from": account})
+    tx.wait(1)
+    print_line("Fund contract!")
+    return tx
+
