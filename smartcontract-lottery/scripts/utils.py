@@ -10,7 +10,7 @@ from brownie import (
 from web3 import Web3
 
 DECIMALS = 8
-STARTING_PRICE = 200_000_000_000  # 2,000
+STARTING_PRICE = 200_000_000_000  # == 2000e8 == 2,000
 LOCAL_BLOCKCHAIN_ENVS = ["development", "ganache-local"]
 FORKED_LOCAL_ENVS = ["mainnet-fork", "mainnet-fork-dev"]
 contract_to_mock = {

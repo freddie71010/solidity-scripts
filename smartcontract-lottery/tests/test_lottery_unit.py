@@ -7,17 +7,13 @@ from scripts.utils import LOCAL_BLOCKCHAIN_ENVS, fund_with_link, get_account, ge
 
 
 def test_get_entrance_fee():
-    """
-    As of 2/23 @ 2:00pm ET:
-    $2653 ~= 1 ETH
-    """
     if network.show_active() not in LOCAL_BLOCKCHAIN_ENVS:
         pytest.skip()
     # Arrange
     lottery = deploy_lottery()
     # Act
     # entrance fee = $50
-    # from utils script: STARTING_PRICE = 200_000_000_000  # $2,000
+    # from 'utils' script: STARTING_PRICE = 200_000_000_000 == 2000e8 == $2,000
     # 50/2000 = 0.025
     expected_entrance_fee = Web3.toWei(0.025, "ether")
     entrance_fee = lottery.getEntranceFee()
@@ -77,9 +73,11 @@ def test_pick_winner_correctly():
     STATIC_RNG_NUM = 207
     get_contract("vrfcoordinator").callBackWithRandomness(request_id, STATIC_RNG_NUM, lottery.address, {"from": main_acc})
     # Assert
-    print(main_acc.address,"\n", 
+    print(
+        main_acc.address,"\n", 
         get_account(index=1).address,"\n", 
-        get_account(index=2).address)
-    assert lottery.recentWinner() == main_acc       # 207 % 3 [players.length] = 0
+        get_account(index=2).address,
+        )
+    assert lottery.recentWinner() == main_acc   # 207 % 3 [players.length] = 0
     assert lottery.balance() == 0
     assert main_acc.balance() == starting_bal_main_acc + bal_of_lottery
