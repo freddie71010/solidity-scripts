@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 
-
 pragma solidity ^0.7.0;
 
 import "@chainlink/contracts/src/v0.7/interfaces/AggregatorV3Interface.sol";
@@ -22,8 +21,8 @@ contract Lottery is VRFConsumerBase, Ownable {
     address payable public recentWinner;
     uint256 public randomNum;
     event RequestRandomness(bytes32 requestId);
+    event LotteryWinner(address winner, uint256 winAmount);
 
-    // 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419
 
     constructor(
         address _priceFeedAddress,
@@ -32,8 +31,7 @@ contract Lottery is VRFConsumerBase, Ownable {
         uint256 _fee,
         bytes32 _keyHash
     ) VRFConsumerBase(_vrfCoordinator, _link) {
-        // $50 USD mininum
-        usdEntryFee = 50 * (10**18); // converts to wei
+        usdEntryFee = 50 * (10**18); // $50 USD mininum - converts to wei
         ethUsdPriceFeed = AggregatorV3Interface(_priceFeedAddress);
         lottery_state = LOTTERY_STATE.CLOSED;
         fee = _fee;
@@ -93,7 +91,9 @@ contract Lottery is VRFConsumerBase, Ownable {
         require(_randomness > 0, "random-not-found");
         uint256 indexOfWinner = _randomness % players.length;
         recentWinner = players[indexOfWinner];
-        recentWinner.transfer(address(this).balance);
+        uint256 lottoPoolAmount = address(this).balance;
+        recentWinner.transfer(lottoPoolAmount);
+        emit LotteryWinner(recentWinner, lottoPoolAmount);
         // Reset lottery
         players = new address payable[](0);
         lottery_state = LOTTERY_STATE.CLOSED;
