@@ -21,6 +21,7 @@ contract Lottery is VRFConsumerBase, Ownable {
     bytes32 public keyHash;
     address payable public recentWinner;
     uint256 public randomNum;
+    event RequestRandomness(bytes32 requestId);
 
     // 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419
 
@@ -78,6 +79,7 @@ contract Lottery is VRFConsumerBase, Ownable {
         lottery_state = LOTTERY_STATE.CALCULATING_WINNER;
         // Random number generated via Chainlink VRF
         bytes32 requestId = requestRandomness(keyHash, fee);
+        emit RequestRandomness(requestId);
     }
 
     function fulfillRandomness(bytes32 requestId, uint256 _randomness)

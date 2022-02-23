@@ -6,7 +6,6 @@ from brownie import (
     MockV3Aggregator,
     VRFCoordinatorMock,
     LinkToken,
-    interface
 )
 from web3 import Web3
 
@@ -85,6 +84,6 @@ def fund_with_link(contract_address, account=None, link_token=None, amount=10000
     # link_token_contract = interface.LinkTokenInterface(link_token.address)  # interface
     # tx = link_token_contract.transfer(contract_address, amount, {"from": account})
     tx.wait(1)
-    print_line("Fund contract!")
+    print_line("Fund contract with LINK complete!")
     return tx
 
