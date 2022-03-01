@@ -25,5 +25,9 @@ networks:
     fee: 100000000000000000
     eth_usd_price_feed: "0x8A753747A1Fa494EC906cE90E9f37563A8AF630e"
     verify: True
+    explorer_api: 'https://api-rinkeby.etherscan.io/api'
 wallets:
-  from_key: ${MM_PRIVATE_KEY}
+  MM1: ${MM1_PRIVATE_KEY}
+  MM2: ${MM2_PRIVATE_KEY}
+api_keys:
+  etherscan: ${ETHERSCAN_TOKEN}

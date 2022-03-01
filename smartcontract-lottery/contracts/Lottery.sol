@@ -22,6 +22,7 @@ contract Lottery is VRFConsumerBase, Ownable {
     uint256 public randomNum;
     event RequestRandomness(bytes32 requestId);
     event LotteryWinner(address winner, uint256 winAmount);
+    event RandomnessReceived(uint256 _randomness);
 
 
     constructor(
@@ -98,5 +99,8 @@ contract Lottery is VRFConsumerBase, Ownable {
         players = new address payable[](0);
         lottery_state = LOTTERY_STATE.CLOSED;
         randomNum = _randomness;
+        
+        // Emit an event for testing purposes
+        emit RandomnessReceived(_randomness);
     }
 }
