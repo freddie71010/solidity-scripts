@@ -131,3 +131,11 @@ dmypy.json
 # Yarn
 .yarn*
 yarn.lock
+
+# VS Code
+*.vscode
+
+# NPM
+node_modules/*
+package-lock.json
+package.json
