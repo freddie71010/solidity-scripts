@@ -1,0 +1,1 @@
+# ERC20 - Fire Token (FIR)
