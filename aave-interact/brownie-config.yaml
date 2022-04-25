@@ -1,0 +1,31 @@
+dependencies:
+  - aave/protocol-v2@1.0.1
+  - smartcontractkit/chainlink@1.1.0
+  - smartcontractkit/chainlink-brownie-contracts@0.3.1
+  - OpenZeppelin/openzeppelin-contracts@3.4.2
+compiler:
+  solc:
+    remappings:
+      - "@aave=aave/protocol-v2@1.0.1"
+      - "@chainlink=smartcontractkit/chainlink@1.1.0"
+      - "@chainlink-brownie=smartcontractkit/chainlink-brownie-contracts@0.3.1"
+      - "@openzeppelin=OpenZeppelin/openzeppelin-contracts@3.4.2"
+
+# dependencies:
+#   - freddie71010/LinkToken@1.0.0
+# compiler:
+#   solc:
+#     remappings:
+#       - "@linktoken=freddie71010/LinkToken@1.0.0"
+
+dotenv: .env
+networks:
+  kovan:
+    weth_token: '0xd0A1E359811322d97991E03f863a0C30C2cF029C'
+  mainnet-fork:
+    weth_token: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+wallets:
+  MM1: ${MM1_PRIVATE_KEY}
+  MM2: ${MM2_PRIVATE_KEY}
+api_keys:
+  etherscan: ${ETHERSCAN_TOKEN}
