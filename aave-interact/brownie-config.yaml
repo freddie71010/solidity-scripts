@@ -20,10 +20,13 @@ compiler:
 
 dotenv: .env
 networks:
+  default: mainnet-fork
   kovan:
     weth_token: '0xd0A1E359811322d97991E03f863a0C30C2cF029C'
+    lending_pool: '0x88757f2f99175387aB4C6a4b3067c77A695b0349'
   mainnet-fork:
     weth_token: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+    lending_pool: '0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5'
 wallets:
   MM1: ${MM1_PRIVATE_KEY}
   MM2: ${MM2_PRIVATE_KEY}
