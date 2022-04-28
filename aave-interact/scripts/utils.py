@@ -23,7 +23,7 @@ contract_to_mock = {
 }
 
 
-def print_line(string, length=100, char='='):
+def print_line(string, length=100, char="="):
     print(f"{string} {(length-len(string))*char}")
 
 def get_account(index=None, brownie_id=None, env=None):
@@ -74,8 +74,8 @@ def get_contract(contract_name):
 
 
 def deploy_mocks(decimals=DECIMALS, initial_value=STARTING_PRICE):
-    print_line(f"The active network is {network.show_active()}", char='-')
-    print_line("Deploying mocks...", char='-')
+    print_line(f"The active network is {network.show_active()}", char="-")
+    print_line("Deploying mocks...", char="-")
     MockV3Aggregator.deploy(
         decimals,
         initial_value,
@@ -83,10 +83,12 @@ def deploy_mocks(decimals=DECIMALS, initial_value=STARTING_PRICE):
     )
     link_token = LinkToken.deploy({"from": get_account()})
     VRFCoordinatorMock.deploy(link_token.address, {"from": get_account()})
-    print_line("Mocks deployed!", char='-')
+    print_line("Mocks deployed!", char="-")
 
 
-def fund_with_link(contract_address, account=None, link_token=None, amount=100000000000000000):  # 0.1 Link
+def fund_with_link(
+    contract_address, account=None, link_token=None, amount=100000000000000000
+):  # 0.1 Link
     account = account if account else get_account()
     link_token = link_token if link_token else get_contract("link_token")
     tx = link_token.transfer(contract_address, amount, {"from": account})
@@ -95,6 +97,7 @@ def fund_with_link(contract_address, account=None, link_token=None, amount=10000
     tx.wait(1)
     print_line("Fund contract with LINK complete!")
     return tx
+
 
 def wait_for_randomness(lottery):
     # Keeps checking for a fulfillRandomness callback using the block explorer's API, and returns the randomness
@@ -107,7 +110,7 @@ def wait_for_randomness(lottery):
     i = 1
 
     # Until randomness received
-    while(True):
+    while True:
         print(f"Checking #{i} in {sleep_time} secs...\n")
         # Wait
         time.sleep(sleep_time)
@@ -124,17 +127,20 @@ def wait_for_randomness(lottery):
                 "fromBlock": from_block,
                 "toBlock": to_block,
                 "address": lottery.address,
-                "topic0": Web3.keccak(text='RandomnessReceived(uint256)').hex(),
+                "topic0": Web3.keccak(text="RandomnessReceived(uint256)").hex(),
                 "apikey": config["api_keys"]["etherscan"],
             },
-            headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36'}).json()
+            headers={
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36"
+            },
+        ).json()
         # Return randomness if received
-        if response['status'] == "1":
+        if response["status"] == "1":
             print(f"Randomness received!\n")
-            return int(response['result'][0]['topics'][0], 16)
+            return int(response["result"][0]["topics"][0], 16)
 
         # Half sleep time if longer than 15 seconds
-        if(sleep_time > 15):
+        if sleep_time > 15:
             sleep_time /= 2
 
         i += 1
