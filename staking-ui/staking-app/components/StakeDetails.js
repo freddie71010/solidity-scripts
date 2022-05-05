@@ -64,8 +64,6 @@ export default function StakeDetails() {
         }
     }), [account, isWeb3Enabled])
 
-    console.log(account)
-
     return (
         <div>
             <h1 className="py-4 px-4 font-bold text-center text-3xl">Summary</h1>
