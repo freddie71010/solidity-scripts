@@ -68,6 +68,7 @@ export default function StakeDetails() {
 
     return (
         <div>
+            <h1 className="py-4 px-4 font-bold text-center text-3xl">Summary</h1>
             <div>RT balance is: {rtBalance}</div>
             <div>Staked balance is: {stakedBalance}</div>
             <div>Earned balance is: {earnedBalance}</div>

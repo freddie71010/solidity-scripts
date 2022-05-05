@@ -9,8 +9,10 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <Header />
-      <StakeDetails />
-      <StakeForm />
+      <div className={styles.main}>
+        <StakeDetails />
+        <StakeForm />
+      </div>
     </div>
   )
 }
