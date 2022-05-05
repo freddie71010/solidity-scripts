@@ -1,6 +1,3 @@
-// how many tokens in wallet
-// tokens staked
-// tokens we earned
 import { useMoralis, useWeb3Contract } from "react-moralis"
 import { stakingAddress, rewardTokenAddress, stakingABI, rewardTokenABI } from "../constants/index"
 import { useEffect, useState } from "react"
