@@ -18,13 +18,13 @@ NOTE: Tokens will automatically be created after launching `def-minimal` and add
 ## Instructions to Run DApp
 
 1. [Run a Local ETH Network](#1-run-a-local-eth-network)
-2. [Import local test wallet into MetaMask](#2-Import-local-test-wallet-into-MetaMask)
-3. [Run Frontend Dev Server](#2-Run-Frontend-Dev-Server)
-4. [Use frontend and interact with dapp](#3-Use-frontend-and-interact-with-dapp)
+2. [Import local test wallet into MetaMask](#2-import-local-test-wallet-into-metamask)
+3. [Run Frontend Dev Server](#3-run-frontend-dev-server)
+4. [Use frontend and interact with dapp](#4-use-frontend-and-interact-with-dapp)
 
 ### 1) Run a Local ETH Network
 
-One of the best ways to test and interact with smart contracts is with a local network. Make sure you are running the correct version of node: `nvm use 16.13.2`.
+One of the best ways to test and interact with smart contracts is with a local network. Make sure you are running the correct version of node: `nvm use 16.13.2`
 
 Open a terminal window and navigate to the `defi-minimal` dir.
 
@@ -61,7 +61,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### 3) Use frontend and interact with dapp
+### 4) Use frontend and interact with dapp
 
 - Navigate to the dapp on the frontend and interact by testing out the `stake` and `withdraw` fields.
 
