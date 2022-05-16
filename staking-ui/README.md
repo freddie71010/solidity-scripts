@@ -1,5 +1,11 @@
 # ERC-20 Token Staking DApp
 
+<br/>
+<p align="center">
+<img src="./staking_app.png" width="500" alt="Staking App">
+</p>
+<br/>
+
 ## DApp Features
 
 - Stake $RT tokens into contract
