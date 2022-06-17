@@ -55,12 +55,12 @@ contract DoggieWalkRandomNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
         i_gasLane = _gasLane;
         i_subscriptionId = _subscriptionId;
         i_callbackGasLimit = _callbackGasLimit;
-        i_mintFee = _mintFee;
+        s_mintFee = _mintFee;
         _initializeContract(dogTokenURIs);
     }
 
     function requestDoggie() public payable returns (uint256 requestId) {
-        if (msg.value <= i_mintFee) {
+        if (msg.value <= s_mintFee) {
             revert NeedMoreETHSent();
         }
         requestId = i_vrfCoordinator.requestRandomWords(
@@ -136,7 +136,7 @@ contract DoggieWalkRandomNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
     }
 
     function getMintFee() public view returns (uint256) {
-        return i_mintFee;
+        return s_mintFee;
     }
 
 }
