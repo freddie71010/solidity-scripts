@@ -5,11 +5,13 @@ import "@chainlink-brownie-contracts/contracts/src/v0.8/interfaces/VRFCoordinato
 import "@chainlink-brownie-contracts/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 error RangeOutOfBounds();
 error AlreadyInitialized();
+error NeedMoreETHSent();    
 
-contract DoggieWalkNFTs is ERC721URIStorage, VRFConsumerBaseV2 {
+contract DoggieWalkRandomNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
     using Counters for Counters.Counter;
     
     // Dog Types
@@ -29,32 +31,38 @@ contract DoggieWalkNFTs is ERC721URIStorage, VRFConsumerBaseV2 {
 
     // NFT Variables
     Counters.Counter public tokenIdCounter;
+    uint256 private s_mintFee;
     uint256 constant MAX_CHANCE_VALUE = 100;
     string[3] internal s_dogTokenURIs;
     bool private s_initialized;
 
     // VRF Helpers
-    mapping(uint256 => address) s_requestIdToSender;
+    mapping(uint256 => address) public s_requestIdToSender;
     
     // Events
     event NftRequested(uint256 indexed requestId, address requester);
     event NftMinted(Breed breed, address minter);
-    
+
     constructor(
         address _vrfCoordinatorV2,
         bytes32 _gasLane,
         uint32 _subscriptionId,
         uint32 _callbackGasLimit,
-        string[3] memory dogTokenURIs
+        string[3] memory dogTokenURIs,
+        uint256 _mintFee
     ) ERC721("Doggie Walk", "DW") VRFConsumerBaseV2(_vrfCoordinatorV2) {
         i_vrfCoordinator = VRFCoordinatorV2Interface(_vrfCoordinatorV2);
         i_gasLane = _gasLane;
         i_subscriptionId = _subscriptionId;
         i_callbackGasLimit = _callbackGasLimit;
+        i_mintFee = _mintFee;
         _initializeContract(dogTokenURIs);
     }
 
-    function requestDoggie() public returns (uint256 requestId) {
+    function requestDoggie() public payable returns (uint256 requestId) {
+        if (msg.value <= i_mintFee) {
+            revert NeedMoreETHSent();
+        }
         requestId = i_vrfCoordinator.requestRandomWords(
             i_gasLane, // price per gas
             i_subscriptionId,
@@ -63,6 +71,7 @@ contract DoggieWalkNFTs is ERC721URIStorage, VRFConsumerBaseV2 {
             NUM_WORDS
         );
         s_requestIdToSender[requestId] = msg.sender;
+        emit NftRequested(requestId, msg.sender);
     }
 
     function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
@@ -110,6 +119,13 @@ contract DoggieWalkNFTs is ERC721URIStorage, VRFConsumerBaseV2 {
         s_initialized = true;
     }
 
+    // withdraw
+    function withdraw() public onlyOwner {
+        uint256 amount = address(this).balance;
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        require(success, "Transfer failed");
+    }
+    
     // getter functions
     function getDogTokenUris(uint256 index) public view returns (string memory) {
         return s_dogTokenURIs[index];
@@ -119,5 +135,8 @@ contract DoggieWalkNFTs is ERC721URIStorage, VRFConsumerBaseV2 {
         return tokenIdCounter.current();
     }
 
+    function getMintFee() public view returns (uint256) {
+        return i_mintFee;
+    }
 
 }
