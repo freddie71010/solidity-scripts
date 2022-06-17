@@ -162,7 +162,7 @@ class PinataPy:
 
     def _print_ipfs_details(self, file: dict, dir: bool, length: int = 30):
         file_type = file['Name'].split(".")[-1] if not dir else "dir"
-        print(file['Name'], file_type, file['Hash'], sep="|", file=open(self.ipfs_cid_output_filename, "a"))
+        print(file['Name'], file_type, file['Hash'], sep="|", file=open(f"uploaded_file_cids/{self.ipfs_cid_output_filename}", "a"))
         
         length = (length - 5) if dir else length
         filename = f"{file['Name']} {'(dir)' if dir else ''}"
