@@ -2,6 +2,10 @@ dependencies:
   - smartcontractkit/chainlink@1.4.1
   - smartcontractkit/chainlink-brownie-contracts@0.4.1
   - OpenZeppelin/openzeppelin-contracts@4.6.0
+reports:
+    exclude_paths:
+        - contracts/mocks/**/*.*
+        - contracts/SafeMath.sol
 dotenv: .env
 compiler:
   solc:
