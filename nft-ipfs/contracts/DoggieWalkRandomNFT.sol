@@ -11,7 +11,7 @@ error RangeOutOfBounds();
 error AlreadyInitialized();
 error NeedMoreETHSent();    
 
-contract DoggieWalkRandomNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
+contract DoggieWalkNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
     using Counters for Counters.Counter;
     
     // Dog Types
@@ -31,7 +31,7 @@ contract DoggieWalkRandomNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
 
     // NFT Variables
     Counters.Counter public tokenIdCounter;
-    uint256 private s_mintFee;
+    uint256 public s_mintFee = 0.01 ether;
     uint256 constant MAX_CHANCE_VALUE = 100;
     string[3] internal s_dogTokenURIs;
     bool private s_initialized;
@@ -45,17 +45,15 @@ contract DoggieWalkRandomNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
 
     constructor(
         address _vrfCoordinatorV2,
-        bytes32 _gasLane,
+        bytes32 _gasLane,   // keyhash
         uint32 _subscriptionId,
         uint32 _callbackGasLimit,
-        string[3] memory dogTokenURIs,
-        uint256 _mintFee
+        string[3] memory dogTokenURIs
     ) ERC721("Doggie Walk", "DW") VRFConsumerBaseV2(_vrfCoordinatorV2) {
         i_vrfCoordinator = VRFCoordinatorV2Interface(_vrfCoordinatorV2);
         i_gasLane = _gasLane;
         i_subscriptionId = _subscriptionId;
         i_callbackGasLimit = _callbackGasLimit;
-        s_mintFee = _mintFee;
         _initializeContract(dogTokenURIs);
     }
 
@@ -137,6 +135,11 @@ contract DoggieWalkRandomNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
 
     function getMintFee() public view returns (uint256) {
         return s_mintFee;
+    }
+
+    // setter functions
+    function _setMintFee(uint256 _newFee) public onlyOwner {
+        s_mintFee = _newFee;
     }
 
 }
