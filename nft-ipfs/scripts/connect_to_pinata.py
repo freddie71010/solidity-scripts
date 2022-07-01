@@ -173,7 +173,7 @@ class PinataPy:
 if __name__ == "__main__":
     IMAGE_FOLDER_PATHWAY = "./images/"
     PinataUploader = PinataPy(os.getenv("PINATA_API_KEY"), os.getenv("PINATA_API_SECRET"))
-    PinataUploader.set_ipfs_cid_output_filename("doggie-walk-nfts_CIDs.txt")
+    PinataUploader.set_ipfs_cid_output_filename(os.getenv("CIDS_TXT_FILE"))
 
     resp_pin_files = PinataUploader.pin_file_to_ipfs(IMAGE_FOLDER_PATHWAY, ipfs_destination_path="doggie-walk-nfts")
     print(resp_pin_files)
@@ -187,7 +187,7 @@ if __name__ == "__main__":
 
 # IMAGE_FOLDER_PATHWAY = "./images/"
 # PinataUploader = PinataPy(os.getenv("PINATA_API_KEY"), os.getenv("PINATA_API_SECRET"))
-# PinataUploader.set_ipfs_cid_output_filename("doggie-walk-nfts_CIDs.txt")
+# PinataUploader.set_ipfs_cid_output_filename(os.getenv("CIDS_TXT_FILE"))
 
 # resp_pin_files = PinataUploader.pin_file_to_ipfs(IMAGE_FOLDER_PATHWAY, ipfs_destination_path="doggie-walk-nfts")
 # print(resp_pin_files)
