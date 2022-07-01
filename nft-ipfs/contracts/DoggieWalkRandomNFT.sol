@@ -23,9 +23,10 @@ contract DoggieWalkNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
     
     // Chainlink VRF Variables
     VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
-    bytes32 private immutable i_gasLane;
-    uint32 private immutable i_subscriptionId;
-    uint32 private immutable i_callbackGasLimit;
+    // TODO: Privatize variable
+    bytes32 public immutable i_gasLane;
+    uint32 public immutable i_subscriptionId;
+    uint32 public immutable i_callbackGasLimit;
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
     uint32 private constant NUM_WORDS = 2;
 
@@ -41,26 +42,26 @@ contract DoggieWalkNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
     
     // Events
     event NftRequested(uint256 indexed requestId, address requester);
-    event NftMinted(Breed breed, address minter);
+    event NftMinted(address minter, uint256 tokenId, Breed breed);
 
     constructor(
         address _vrfCoordinatorV2,
         bytes32 _gasLane,   // keyhash
-        uint32 _subscriptionId,
         uint32 _callbackGasLimit,
+        uint32 _subscriptionId,
         string[3] memory dogTokenURIs
     ) ERC721("Doggie Walk", "DW") VRFConsumerBaseV2(_vrfCoordinatorV2) {
         i_vrfCoordinator = VRFCoordinatorV2Interface(_vrfCoordinatorV2);
         i_gasLane = _gasLane;
-        i_subscriptionId = _subscriptionId;
         i_callbackGasLimit = _callbackGasLimit;
+        i_subscriptionId = _subscriptionId;
         _initializeContract(dogTokenURIs);
     }
 
     function requestDoggie() public payable returns (uint256 requestId) {
-        if (msg.value <= s_mintFee) {
-            revert NeedMoreETHSent();
-        }
+        // if (msg.value <= s_mintFee) {
+        //     revert NeedMoreETHSent();
+        // }
         requestId = i_vrfCoordinator.requestRandomWords(
             i_gasLane, // price per gas
             i_subscriptionId,
@@ -83,8 +84,7 @@ contract DoggieWalkNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
         _safeMint(dogOwner, newTokenId);
         // set the tokenURI of Dog
         _setTokenURI(newTokenId, s_dogTokenURIs[uint256(breed)]);
-        emit NftMinted(breed, dogOwner);
-
+        emit NftMinted(dogOwner, newTokenId, breed);
     }
 
     function getChanceArray() public pure returns (uint256[3] memory) {
