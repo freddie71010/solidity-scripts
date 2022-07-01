@@ -1,5 +1,4 @@
 dependencies:
-  - smartcontractkit/chainlink@1.4.1
   - smartcontractkit/chainlink-brownie-contracts@0.4.1
   - OpenZeppelin/openzeppelin-contracts@4.6.0
 reports:
@@ -10,7 +9,6 @@ dotenv: .env
 compiler:
   solc:
     remappings:
-      - "@chainlink=smartcontractkit/chainlink@1.4.1"
       - "@chainlink-brownie-contracts=smartcontractkit/chainlink-brownie-contracts@0.4.1"
       - "@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.6.0"
 networks:
@@ -18,16 +16,42 @@ networks:
   development:
     keyhash: "0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311"
     fee: 100000000000000000
+    vrfcoordinator_v2: "0x6168499c0cFfCaCD319c818142124B7A15E857ab"
+    keyhash_v2: "0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc" # 30gwei
+    callback_gas_limit_v2: 200_000
+    subscription_id: ${CL_SUBSCRIPTION_ID}
+  mainnet:
+    link_token: "0x514910771af9ca656af840dff83e8264ecf986ca"
+    vrfcoordinator: "0x271682DEB8C4E0901D1a1550aD2e64D568E69909"
+    keyhash: "0x8af398995b04c28e9951adb9721ef74c74f93e6a478f39e7e0777be13527e7ef" # 200gwei
+    # keyhash: "0xff8dedfbfa60af186cf3c830acbc32c05aae823045ae5ea7da1e45fbfaba4f92" # 500gwei
+    # keyhash: "0x9fe0eebf5e446e3c998ec9bb19951541aee00bb90ea201ae456421a2ded86805" # 1000gwei
   mainnet-fork:
     eth_usd_price_feed: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"
   rinkeby:
     link_token: "0x01BE23585060835E02B77ef475b0Cc51aA1e0709"
     vrfcoordinator_v1: "0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B"
     keyhash_v1: "0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311"
+    
+    vrfcoordinator_v2: "0x6168499c0cFfCaCD319c818142124B7A15E857ab"
+    keyhash_v2: "0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc" # 30gwei
+    callback_gas_limit_v2: 200_000
+    subscription_id: ${CL_SUBSCRIPTION_ID}
+
     fee: 100000000000000000
     eth_usd_price_feed: "0x8A753747A1Fa494EC906cE90E9f37563A8AF630e"
     verify: True
     explorer_api: "https://api-rinkeby.etherscan.io/api"
+  mumbai:
+    eth_usd_price_feed: '0x0715A7794a1dc8e42615F059dD6e406A6594651A'
+  binance:
+    eth_usd_price_feed: '0x9ef1B8c0E4F7dc8bF5719Ea496883DC6401d5b2e'
+  binance-fork:
+    eth_usd_price_feed: '0x9ef1B8c0E4F7dc8bF5719Ea496883DC6401d5b2e'
+  mainnet-fork:
+    eth_usd_price_feed: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419'
+  matic-fork:
+    eth_usd_price_feed: '0xF9680D99D6C9589e2a93a78A04A279e509205945'
 wallets:
   MM1: ${MM1_PRIVATE_KEY}
   MM2: ${MM2_PRIVATE_KEY}
