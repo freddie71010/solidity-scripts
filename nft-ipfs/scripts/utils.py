@@ -4,27 +4,50 @@ from brownie import (
     config,
     chain,
     Contract,
-    MockV3Aggregator,
-    VRFCoordinatorMock,
-    LinkToken,
+    AggregatorV3Mock,
+    VRFCoordinatorV2Mock,
+    chain,
+    web3,
+
 )
-from web3 import Web3
+# from web3 import Web3, eth
 import requests
 import time
+import os
 
 DECIMALS = 8
 STARTING_PRICE = 200_000_000_000  # == 2000e8 == 2,000
-LOCAL_BLOCKCHAIN_ENVS = ["development", "ganache-local"]
-FORKED_LOCAL_ENVS = ["mainnet-fork", "mainnet-fork-dev"]
+
+NON_FORKED_LOCAL_BLOCKCHAIN_ENVIRONMENTS = ["development", "ganache"]
+LOCAL_BLOCKCHAIN_ENVIRONMENTS = NON_FORKED_LOCAL_BLOCKCHAIN_ENVIRONMENTS + [
+    "mainnet-fork",
+    "binance-fork",
+    "matic-fork",
+]
+
 contract_to_mock = {
-    "eth_usd_price_feed": MockV3Aggregator,
-    "vrfcoordinator": VRFCoordinatorMock,
-    "link_token": LinkToken,
+    "eth_usd_price_feed": AggregatorV3Mock,
+    "vrfcoordinator": VRFCoordinatorV2Mock,
 }
+
+# ---------------------------------------------------------------------------
+
+def get_publish_source():
+    if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS \
+    or not os.getenv("ETHERSCAN_TOKEN"):
+        return False
+    else:
+        return True
+
+
+def get_name_of_breed(breed_number):
+    switch = {0: "PUG", 1: "SHIBA_INU", 2: "ST_BERNARD"}
+    return switch[breed_number]
 
 
 def print_line(string, length=100, char='='):
     print(f"{string} {(length-len(string))*char}")
+
 
 def get_account(index=None, brownie_id=None, env=None):
     # Gets acc from pre-configured Brownie accs based on the passed index
@@ -37,10 +60,7 @@ def get_account(index=None, brownie_id=None, env=None):
     if env:
         accounts.add(config["wallets"][env])
     # Gets the first acc from pre-configured Brownie accs while on a local or forked blockchain
-    if (
-        network.show_active() in LOCAL_BLOCKCHAIN_ENVS
-        or network.show_active() in FORKED_LOCAL_ENVS
-    ):
+    if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
         return accounts[0]
     # Gets the first private key acc from env variables when on a mainnet/testnet
     return accounts.add(config["wallets"]["MM1"])
@@ -58,9 +78,8 @@ def get_contract(contract_name):
             brownie.network.contract.ProjectContract: the most recently deployed version of the contract
     """
     contract_type = contract_to_mock[contract_name]
-
     # Local Blockchains
-    if network.show_active() in LOCAL_BLOCKCHAIN_ENVS:
+    if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
         if len(contract_type) <= 0:
             deploy_mocks()
         contract = contract_type[-1]
@@ -73,31 +92,32 @@ def get_contract(contract_name):
     return contract
 
 
-def deploy_mocks(decimals=DECIMALS, initial_value=STARTING_PRICE):
+def deploy_mocks():
+    account = get_account()
+    
     print_line(f"The active network is {network.show_active()}", char='-')
-    print_line("Deploying mocks...", char='-')
-    MockV3Aggregator.deploy(
-        decimals,
-        initial_value,
-        {"from": get_account()},
+    print_line("Deploying mocks...")
+    
+    print("Deploying Mock ETH-USD Price Feed...")
+    mock_price_feed = AggregatorV3Mock.deploy(
+        DECIMALS, STARTING_PRICE, 
+        {"from": account}
+        )
+    print(f"Deployed to {mock_price_feed.address}")
+
+    print("Deploying Mock VRFCoordinatorV2...")
+    mock_vrf_coordinator = VRFCoordinatorV2Mock.deploy(
+        web3.Web3.toWei(0.1, "ether"), 1000000000, 
+        {"from": account}
     )
-    link_token = LinkToken.deploy({"from": get_account()})
-    VRFCoordinatorMock.deploy(link_token.address, {"from": get_account()})
+    print(f"Deployed to {mock_vrf_coordinator.address}")
+    
     print_line("Mocks deployed!", char='-')
 
 
-def fund_with_link(contract_address, account=None, link_token=None, amount=100000000000000000):  # 0.1 Link
-    account = account if account else get_account()
-    link_token = link_token if link_token else get_contract("link_token")
-    tx = link_token.transfer(contract_address, amount, {"from": account})
-    # link_token_contract = interface.LinkTokenInterface(link_token.address)  # interface
-    # tx = link_token_contract.transfer(contract_address, amount, {"from": account})
-    tx.wait(1)
-    print_line("Fund contract with LINK complete!")
-    return tx
-
-def wait_for_randomness(lottery):
+def wait_for_randomness(brownie_contract, event_to_monitor_text: str):
     # Keeps checking for a fulfillRandomness callback using the block explorer's API, and returns the randomness
+    # Ex: "topic0": web3.Web3.keccak(text='RandomnessReceived(uint256)').hex(),
 
     # Initial frequency, in seconds
     sleep_time = 120
@@ -123,8 +143,8 @@ def wait_for_randomness(lottery):
                 "action": "getLogs",
                 "fromBlock": from_block,
                 "toBlock": to_block,
-                "address": lottery.address,
-                "topic0": Web3.keccak(text='RandomnessReceived(uint256)').hex(),
+                "address": brownie_contract.address,
+                "topic0": web3.Web3.keccak(text=event_to_monitor_text).hex(),
                 "apikey": config["api_keys"]["etherscan"],
             },
             headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36'}).json()
@@ -138,3 +158,33 @@ def wait_for_randomness(lottery):
             sleep_time /= 2
 
         i += 1
+
+def listen_for_event(brownie_contract, event, timeout=60, poll_interval=2):
+    """Listen for an event to be fired from a contract.
+    We are waiting for the event to return, so this function is blocking.
+    Args:
+        brownie_contract ([brownie.network.contract.ProjectContract]):
+        A brownie contract of some kind.
+        event ([string]): The event you'd like to listen for.
+        timeout (int, optional): The max amount in seconds you'd like to
+        wait for that event to fire. Defaults to 60 seconds.
+        poll_interval ([int]): How often to call your node to check for events.
+        Defaults to 2 seconds.
+    """
+    web3_contract = web3.eth.contract(
+        address=brownie_contract.address, abi=brownie_contract.abi
+    )
+    start_time = time.time()
+    current_time = time.time()
+    event_filter = web3_contract.events[event].createFilter(fromBlock="latest")
+    print(f"Checking for event ({event}) every {poll_interval} seconds for a total of {timeout} seconds...")
+    while current_time - start_time < timeout:
+        for event_response in event_filter.get_new_entries():
+            if event in event_response.event:
+                print("Found event!")
+                return event_response
+        print("...")
+        time.sleep(poll_interval)
+        current_time = time.time()
+    print_line(f"Timeout of {timeout} seconds reached, no event found.")
+    return {"event": None}
