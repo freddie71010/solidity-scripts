@@ -22,12 +22,17 @@ API_ENDPOINT: str = "https://api.pinata.cloud/"
 class PinataPy:
     """A pinata api client session object"""
 
-    def __init__(self, pinata_api_key: str, pinata_secret_api_key: str) -> None:
+    def __init__(self, pinata_api_key: str, pinata_secret_api_key: str, collection_name: str, uploaded_ipfs_hash: str = None) -> None:
         self._auth_headers: Headers = {
             "pinata_api_key": pinata_api_key,
             "pinata_secret_api_key": pinata_secret_api_key,
         }
-        self.ipfs_cid_output_filename = "ipfs_output_CIDs.txt"
+        
+        if collection_name is None or "" or len(collection_name) < 1:
+            raise ValueError
+        self.collection_name = collection_name
+        self.ipfs_cid_file = f"{collection_name}_CIDs.txt"
+        self.uploaded_ipfs_hash: str = uploaded_ipfs_hash
 
     @staticmethod
     def _error(response: requests.Response) -> ResponsePayload:
@@ -73,7 +78,7 @@ class PinataPy:
         url: str = API_ENDPOINT + "pinning/pinFileToIPFS"
         headers: Headers = {k: self._auth_headers[k] for k in ["pinata_api_key", "pinata_secret_api_key"]}
         dest_folder_name = (
-            ipfs_destination_path
+            self.collection_name + "/"
             if ipfs_destination_path == "/"
             else self._validate_destination_folder_name(ipfs_destination_path)
         )
@@ -92,6 +97,7 @@ class PinataPy:
         if os.path.isdir(path_to_file):
             all_files: tp.List[str] = get_all_files(path_to_file)
             files = [("file", (dest_folder_name + file.split("/")[-1], open(file, "rb"))) for file in all_files]
+            # self.uploaded_ipfs_hash = 
         # If path_to_file is a single file
         else:
             files = [("file", (dest_folder_name + path_to_file.split("/")[-1], open(path_to_file, "rb")))]
@@ -140,7 +146,8 @@ class PinataPy:
         Returns: Dictionary of all File names to their corresponding Hash/CID
         """
         url: str = 'https://dweb.link/api/v0/ls'
-        params: dict = {'arg': ipfs_hash}
+        ipfs_hash_arg = ipfs_hash if ipfs_hash else self.uploaded_ipfs_hash
+        params: dict = {'arg': ipfs_hash_arg}
         response: requests.Response = requests.get(url=url, params=params)
         file_cids: dict = {}
         
@@ -156,13 +163,21 @@ class PinataPy:
         return file_cids
     
 
-    def set_ipfs_cid_output_filename(self, name: str = None):
-        self.ipfs_cid_output_filename = name if name is not None else self.ipfs_cid_output_filename 
+    # def set_ipfs_cid_file(self, name: str = None):
+    #     """
+    #     Setter for 'ipfs_cid_file' variable. Raises error if file is not a text file.
+    #     """
+    #     if name.split(".")[-1].lower() != "txt":
+    #         raise ValueError("Only text files (.txt) are allowed.")
+    #     self.ipfs_cid_file = name if name is not None else self.ipfs_cid_file 
+    #     print(f"'ipfs_cid_file' updated.")
 
 
     def _print_ipfs_details(self, file: dict, dir: bool, length: int = 30):
         file_type = file['Name'].split(".")[-1] if not dir else "dir"
-        print(file['Name'], file_type, file['Hash'], sep="|", file=open(f"uploaded_file_cids/{self.ipfs_cid_output_filename}", "a"))
+        print(file['Name'], file_type, file['Hash'], sep="|",
+              file=open(f"uploaded_file_cids/{self.ipfs_cid_file}", "a")
+        )
         
         length = (length - 5) if dir else length
         filename = f"{file['Name']} {'(dir)' if dir else ''}"
@@ -172,18 +187,22 @@ class PinataPy:
 
 if __name__ == "__main__":
     IMAGE_FOLDER_PATHWAY = "./images/"
-    PinataUploader = PinataPy(os.getenv("PINATA_API_KEY"), os.getenv("PINATA_API_SECRET"))
-    PinataUploader.set_ipfs_cid_output_filename(os.getenv("CIDS_TXT_FILE"))
+    collection_name = os.getenv("COLLECTION_NAME") if os.getenv("COLLECTION_NAME") else "main-collection"
+    PinataUploader = PinataPy(os.getenv("PINATA_API_KEY"), os.getenv("PINATA_API_SECRET"), collection_name)
 
-    resp_pin_files = PinataUploader.pin_file_to_ipfs(IMAGE_FOLDER_PATHWAY, ipfs_destination_path="doggie-walk-nfts")
+    resp_pin_files = PinataUploader.pin_file_to_ipfs(IMAGE_FOLDER_PATHWAY)
     print(resp_pin_files)
+    
     folder_cid = resp_pin_files['IpfsHash']
+    # folder_cid = ''
 
-    resp_pin_list = PinataUploader.pin_list({"status": "pinned", "metadata[name]": "doggie-walk-nfts"})
-    print(resp_pin_list)
+    resp_pin_list = PinataUploader.pin_list({"status": "pinned", "metadata[name]": collection_name})
+    print(f"Pinned List: {resp_pin_list}")
 
-    resp_ipfs_cids = PinataUploader.get_all_ipfs_file_cids(folder_cid)
-    print(resp_ipfs_cids)
+    resp_ipfs_cids = PinataUploader.get_all_ipfs_file_cids(ipfs_hash=folder_cid)
+    print(f"IPFS File CIDs: {resp_ipfs_cids}")
+
+
 
 # IMAGE_FOLDER_PATHWAY = "./images/"
 # PinataUploader = PinataPy(os.getenv("PINATA_API_KEY"), os.getenv("PINATA_API_SECRET"))
