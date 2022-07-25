@@ -51,38 +51,39 @@ class PinataPy:
         return path
 
     def pin_file_to_ipfs(
-        self,
-        path_to_file: str,
-        ipfs_destination_path: str = "/",
-        options: tp.Optional[OptionsDict] = None,
+            self,
+            path_to_file: str,
+            ipfs_destination_path: str = "/",
+            save_absolute_paths: bool = True,
+            options: tp.Optional[OptionsDict] = None,
     ) -> ResponsePayload:
         """
         Pin any file, or directory, to Pinata's IPFS nodes
-
         Args:
             path_to_file: local path of file/directory to upload to IPFS node
-            ipfs_destination_path: destination path of file(s) on the IPFS node.
-                You can only set one destination path per call.
+            ipfs_destination_path: destination path of file(s) on the IPFS node. 
+                You can only set one destination path per call. 
                 Pathway can be viewed in the Pinata Cloud Pin Manager (https://app.pinata.cloud/pinmanager).
                 Ex: input => destination path
                     '' => /
                     'animal-nfts/' => /animal-nfts/
                     'retro-nfts/animals' => /retro-nfts/animals/
+            save_absolute_paths: parameter to control filepaths cutting.
+                Ex: input => destination path
+                    true: /dir1/dir2/dir3/filename => /dir1/dir2/dir3/filename
+                    false: /dir1/dir2/dir3/filename => filename
             options: optional parameters (pinataMetadata, pinataOptions)
-
         Returns:
             JSON response
-
         More: https://docs.pinata.cloud/pinata-api/pinning/pin-file-or-directory
         """
         url: str = API_ENDPOINT + "pinning/pinFileToIPFS"
         headers: Headers = {k: self._auth_headers[k] for k in ["pinata_api_key", "pinata_secret_api_key"]}
         dest_folder_name = (
-            self.collection_name + "/"
+            ipfs_destination_path
             if ipfs_destination_path == "/"
             else self._validate_destination_folder_name(ipfs_destination_path)
         )
-
         def get_all_files(directory: str) -> tp.List[str]:
             """get a list of absolute paths to every file located in the directory"""
             paths: tp.List[str] = []
@@ -91,16 +92,24 @@ class PinataPy:
                     paths.append(os.path.join(root, file))
             return paths
 
+        def get_mutated_filepath(filepath: str, dest_folder_name: str, save_absolute_paths: bool):
+            """transform filepath with dest_folder_name and absolute path saving rules"""
+            if save_absolute_paths:
+                return dest_folder_name + (filepath[:1].replace("/", "") + filepath[1:])  # remove first '/' if exists
+            else:
+                return dest_folder_name + filepath.split("/")[-1]
+
         files: tp.List[str, tp.Any]
 
         # If path_to_file is a directory
         if os.path.isdir(path_to_file):
             all_files: tp.List[str] = get_all_files(path_to_file)
-            files = [("file", (dest_folder_name + file.split("/")[-1], open(file, "rb"))) for file in all_files]
-            # self.uploaded_ipfs_hash = 
+            files = [("file", (get_mutated_filepath(file, dest_folder_name, save_absolute_paths), open(file, "rb"))) for
+                     file in all_files]  # type: ignore
         # If path_to_file is a single file
         else:
-            files = [("file", (dest_folder_name + path_to_file.split("/")[-1], open(path_to_file, "rb")))]
+            files = [("file", (get_mutated_filepath(path_to_file, dest_folder_name, save_absolute_paths),
+                               open(path_to_file, "rb")))]  # type: ignore
 
         if options is not None:
             if "pinataMetadata" in options:
@@ -109,6 +118,7 @@ class PinataPy:
                 headers["pinataOptions"] = options["pinataOptions"]
         response: requests.Response = requests.post(url=url, files=files, headers=headers)
         return response.json() if response.ok else self._error(response)  # type: ignore
+
 
     def pin_list(self, options: tp.Optional[OptionsDict] = None) -> ResponsePayload:
         """ Returns list of your IPFS files based on certain filters.
@@ -162,6 +172,22 @@ class PinataPy:
                 self.get_all_ipfs_files(file['Hash'])
         return file_cids
     
+    def pin_json_to_ipfs(self, json_to_pin: tp.Any, options: tp.Optional[OptionsDict] = None) -> ResponsePayload:
+        """ pin provided JSON
+        
+        More: https://docs.pinata.cloud/pinata-api/pinning/pin-json
+        """
+        url: str = API_ENDPOINT + "pinning/pinJSONToIPFS"
+        headers: Headers = self._auth_headers
+        headers["Content-Type"] = "application/json"
+        payload: ResponsePayload = {"pinataContent": json_to_pin}
+        if options is not None:
+            if "pinataMetadata" in options:
+                payload["pinataMetadata"] = options["pinataMetadata"]
+            if "pinataOptions" in options:
+                payload["pinataOptions"] = options["pinataOptions"]
+        response: requests.Response = requests.post(url=url, json=payload, headers=headers)
+        return response.json() if response.ok else self._error(response)  # type: ignore
 
     # def set_ipfs_cid_file(self, name: str = None):
     #     """
@@ -206,7 +232,7 @@ if __name__ == "__main__":
 
 # IMAGE_FOLDER_PATHWAY = "./images/"
 # PinataUploader = PinataPy(os.getenv("PINATA_API_KEY"), os.getenv("PINATA_API_SECRET"))
-# PinataUploader.set_ipfs_cid_output_filename(os.getenv("CIDS_TXT_FILE"))
+# PinataUploader.set_ipfs_cid_output_filename(os.getenv("CIDS_TXT_FILENAME"))
 
 # resp_pin_files = PinataUploader.pin_file_to_ipfs(IMAGE_FOLDER_PATHWAY, ipfs_destination_path="doggie-walk-nfts")
 # print(resp_pin_files)
