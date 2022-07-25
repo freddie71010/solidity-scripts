@@ -22,7 +22,7 @@ def create_doggie_nft(*args):
         print(event)
         breed_name: str = get_name_of_breed(event.args.breed)
 
-        print(f"Doggie #{event.args.tokenId} is a {breed_name}!")
+        print(f"Doggie ID#{event.args.tokenId} is a {breed_name}!")
     except Exception as e:
         print("No event found.")
     
@@ -42,7 +42,7 @@ def main():
 
     else:
         print("Deploying a new contract...")
-        deploy_collection(dogTokenURI_cids_filename=os.getenv("CIDS_TXT_FILE"))
+        deploy_collection(dogTokenURI_cids_filename=os.getenv("CIDS_TXT_FILENAME"))
         create_doggie_nft()
     print("end")
 

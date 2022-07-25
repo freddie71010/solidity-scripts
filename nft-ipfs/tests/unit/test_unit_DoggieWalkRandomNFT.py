@@ -17,7 +17,7 @@ def test_doggie_fee():
     account = get_account()
     # Act
     doggie_nft_collectible = s01__deploy_nft_collection.deploy_collection(
-        dogTokenURI_cids_filename=os.getenv("CIDS_TXT_FILE"))
+        dogTokenURI_cids_filename=os.getenv("CIDS_TXT_FILENAME"))
     expected_doggie_fee = Web3.toWei(0.01, "ether")
     doggie_fee = doggie_nft_collectible.getMintFee()
     # Assert

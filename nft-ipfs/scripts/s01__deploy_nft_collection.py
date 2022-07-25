@@ -49,4 +49,4 @@ def _chainlink_subscription_warning():
     input("Add address as a 'Consumer' to VRF Chainlink Manager to continue. Push 'Enter' when ready:")
 
 def main():
-    deploy_collection(dogTokenURI_cids_filename=os.getenv("CIDS_TXT_FILE"))
+    deploy_collection(dogTokenURI_cids_filename=os.getenv("CIDS_TXT_FILENAME"))
