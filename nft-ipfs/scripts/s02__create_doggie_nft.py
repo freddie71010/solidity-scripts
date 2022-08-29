@@ -8,16 +8,16 @@ load_dotenv()
 
 def create_doggie_nft(*args):
     account = get_account(env="MM1")
-    doggie_nft_collectible = args[0] if args else DoggieWalkNFT[-1]
-    print_line(f"Doggie Collectible contract address: {doggie_nft_collectible.address}")
-    starting_tx = doggie_nft_collectible.requestDoggie({"from": account})
+    doggie_nft_collection = args[0] if args else DoggieWalkNFT[-1]
+    print_line(f"Doggie Collectible contract address: {doggie_nft_collection.address}")
+    starting_tx = doggie_nft_collection.requestDoggie({"from": account})
     # starting_tx = doggie_nft_collectible.requestDoggie({"from": account, "amount": 10000000000000000})    # 0.01 eth
     starting_tx.wait(1)
 
     print_line("Mint Doggie has started!")
     try:
         event = listen_for_event(
-            doggie_nft_collectible, "NftMinted", timeout=5*60, poll_interval=20
+            doggie_nft_collection, "NftMinted", timeout=5*60, poll_interval=20
         )
         print(event)
         breed_name: str = get_name_of_breed(event.args.breed)
@@ -28,7 +28,7 @@ def create_doggie_nft(*args):
     
 
 def main():
-    existing_collection = False
+    existing_collection = True
     collection_address = os.getenv("EXISTING_CONTRACT")
     collection_network = "rinkeby"
     
