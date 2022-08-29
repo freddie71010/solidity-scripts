@@ -115,49 +115,6 @@ def deploy_mocks():
     print_line("Mocks deployed!", char='-')
 
 
-def wait_for_randomness(brownie_contract, event_to_monitor_text: str):
-    # Keeps checking for a fulfillRandomness callback using the block explorer's API, and returns the randomness
-    # Ex: "topic0": web3.Web3.keccak(text='RandomnessReceived(uint256)').hex(),
-
-    # Initial frequency, in seconds
-    sleep_time = 120
-    # Last checked block num
-    from_block = len(chain)
-    print("Waiting For Data...\n")
-    i = 1
-
-    # Until randomness received
-    while(True):
-        print(f"Checking #{i} in {sleep_time} secs...\n")
-        # Wait
-        time.sleep(sleep_time)
-        # Get last mined block num
-        to_block = len(chain)
-
-        # Check if randomness received
-        # 🔗 See https://docs.etherscan.io/api-endpoints/logs
-        response = requests.get(
-            config["networks"][network.show_active()]["explorer_api"],
-            params={
-                "module": "logs",
-                "action": "getLogs",
-                "fromBlock": from_block,
-                "toBlock": to_block,
-                "address": brownie_contract.address,
-                "topic0": web3.Web3.keccak(text=event_to_monitor_text).hex(),
-                "apikey": config["api_keys"]["etherscan"],
-            },
-            headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36'}).json()
-        # Return randomness if received
-        if response['status'] == "1":
-            print(f"Randomness received!\n")
-            return int(response['result'][0]['topics'][0], 16)
-
-        # Half sleep time if longer than 15 seconds
-        if(sleep_time > 15):
-            sleep_time /= 2
-
-        i += 1
 
 def listen_for_event(brownie_contract, event, timeout=60, poll_interval=2):
     """Listen for an event to be fired from a contract.
@@ -188,3 +145,26 @@ def listen_for_event(brownie_contract, event, timeout=60, poll_interval=2):
         current_time = time.time()
     print_line(f"Timeout of {timeout} seconds reached, no event found.")
     return {"event": None}
+
+def get_dog_cids(cids_filename: str, limit_collection: bool = False):
+    """
+    Parses newly generated CIDs.txt file for all Doggie CIDs to be used 
+    """
+    try: 
+        with open(os.getcwd() + f"/uploaded_file_cids/{cids_filename}", "r") as f:
+            dog_token_uris: dict = {}
+            for line in f:
+                data: list = line.strip().split("|")
+                if data[1] == "dir":
+                    continue
+                if limit_collection and data[0] not in ['pug.png', 'st-bernard.png', 'shiba-inu.png']:
+                    continue
+                dog_token_uris[data[0]] = data[2]
+
+        dog_token_uris_list: list = list(dog_token_uris.values())
+        print("INFO: NFT Collection limited to 3 Doggies.")
+        print(dog_token_uris)
+        print(dog_token_uris_list)
+        return (dog_token_uris, dog_token_uris_list)
+    except FileNotFoundError as e:
+        print(e)
