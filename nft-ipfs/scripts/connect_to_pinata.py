@@ -22,7 +22,12 @@ API_ENDPOINT: str = "https://api.pinata.cloud/"
 class PinataPy:
     """A pinata api client session object"""
 
-    def __init__(self, pinata_api_key: str, pinata_secret_api_key: str, collection_name: str, uploaded_ipfs_hash: str = None) -> None:
+    def __init__(self, 
+        pinata_api_key: str,
+        pinata_secret_api_key: str, 
+        collection_name: str = "main-collection", 
+        ipfs_hash: str = None
+    ) -> None:
         self._auth_headers: Headers = {
             "pinata_api_key": pinata_api_key,
             "pinata_secret_api_key": pinata_secret_api_key,
@@ -32,7 +37,13 @@ class PinataPy:
             raise ValueError
         self.collection_name = collection_name
         self.ipfs_cid_file = f"{collection_name}_CIDs.txt"
-        self.uploaded_ipfs_hash: str = uploaded_ipfs_hash
+        self.existing_ipfs_hash_bool = True if ipfs_hash else False
+        self.ipfs_hash: str = ipfs_hash
+        if self.existing_ipfs_hash_bool:
+            print(f"Using existing collection at CID: {self.ipfs_hash}")
+        else:
+            print(f"Creating a new collection...")
+
 
     @staticmethod
     def _error(response: requests.Response) -> ResponsePayload:
@@ -117,6 +128,10 @@ class PinataPy:
             if "pinataOptions" in options:
                 headers["pinataOptions"] = options["pinataOptions"]
         response: requests.Response = requests.post(url=url, files=files, headers=headers)
+        if response.ok:
+            self.existing_ipfs_hash_bool = False
+            self.ipfs_hash = response.json()['IpfsHash']
+            print("Saved new IPFS Hash.")
         return response.json() if response.ok else self._error(response)  # type: ignore
 
 
@@ -146,32 +161,40 @@ class PinataPy:
         response: requests.Response = requests.delete(url=url, data={}, headers=headers)
         return self._error(response) if not response.ok else {"message": "Removed"}
     
-    def get_all_ipfs_file_cids(self, ipfs_hash: str) -> ResponsePayload:
+    def get_all_ipfs_file_cids(self, ipfs_hash: str = None) -> dict:
         """ 
         
         Scans the inputted IPFS hash for nested folders/files to identify all 
-        the associated CIDs in that nested structure and creates output .txt file 
+        the associated CIDs in that nested structure and create output .txt file
         with the name, file type, and CID of each file.
 
         Returns: Dictionary of all File names to their corresponding Hash/CID
         """
         url: str = 'https://dweb.link/api/v0/ls'
-        ipfs_hash_arg = ipfs_hash if ipfs_hash else self.uploaded_ipfs_hash
+        ipfs_hash_arg = ipfs_hash if ipfs_hash else self.ipfs_hash
         params: dict = {'arg': ipfs_hash_arg}
-        response: requests.Response = requests.get(url=url, params=params)
-        file_cids: dict = {}
-        
+        print("Sending request...")
+        try:
+            response: requests.Response = requests.get(url=url, params=params)
+        except Exception as e:
+            print(e)
         time.sleep(2)
-        resp_ipfs_files = response.json()['Objects'][0]['Links'] if response.ok else self._error(response)  # type: ignore
-        print("FILE CIDS", "="*25)
-        for file in resp_ipfs_files:
-            dir: bool = True if file['Size'] == 0 else False  # checks to see if file is a Directory
-            self._print_ipfs_details(file, dir)
-            file_cids[file['Name']] =file['Hash']
-            if dir:
-                self.get_all_ipfs_files(file['Hash'])
-        return file_cids
-    
+        if response.ok:
+            file_cids: dict = {}
+            resp_ipfs_files = response.json()['Objects'][0]['Links'] if response.ok else self._error(
+                response)  # type: ignore
+            # TODO: If output files exists, clear the contents before writing to it.
+            print("FILE CIDS", "="*50)
+            for file in resp_ipfs_files:
+                dir: bool = True if file['Size'] == 0 else False  # checks to see if file is a Directory
+                self._print_ipfs_details(file, dir)
+                file_cids[file['Name']] =file['Hash']
+                if dir:
+                    self.get_all_ipfs_file_cids(file['Hash'])
+            return file_cids
+        else:
+            return self._error(response)
+
     def pin_json_to_ipfs(self, json_to_pin: tp.Any, options: tp.Optional[OptionsDict] = None) -> ResponsePayload:
         """ pin provided JSON
         
@@ -189,15 +212,6 @@ class PinataPy:
         response: requests.Response = requests.post(url=url, json=payload, headers=headers)
         return response.json() if response.ok else self._error(response)  # type: ignore
 
-    # def set_ipfs_cid_file(self, name: str = None):
-    #     """
-    #     Setter for 'ipfs_cid_file' variable. Raises error if file is not a text file.
-    #     """
-    #     if name.split(".")[-1].lower() != "txt":
-    #         raise ValueError("Only text files (.txt) are allowed.")
-    #     self.ipfs_cid_file = name if name is not None else self.ipfs_cid_file 
-    #     print(f"'ipfs_cid_file' updated.")
-
 
     def _print_ipfs_details(self, file: dict, dir: bool, length: int = 30):
         file_type = file['Name'].split(".")[-1] if not dir else "dir"
@@ -209,53 +223,3 @@ class PinataPy:
         filename = f"{file['Name']} {'(dir)' if dir else ''}"
         print(f"{filename}{(length-len(filename))*' '}: {file['Hash']}")
     
-
-
-if __name__ == "__main__":
-    IMAGE_FOLDER_PATHWAY = "./images/"
-    collection_name = os.getenv("COLLECTION_NAME") if os.getenv("COLLECTION_NAME") else "main-collection"
-    PinataUploader = PinataPy(os.getenv("PINATA_API_KEY"), os.getenv("PINATA_API_SECRET"), collection_name)
-
-    resp_pin_files = PinataUploader.pin_file_to_ipfs(IMAGE_FOLDER_PATHWAY)
-    print(resp_pin_files)
-    
-    folder_cid = resp_pin_files['IpfsHash']
-    # folder_cid = ''
-
-    resp_pin_list = PinataUploader.pin_list({"status": "pinned", "metadata[name]": collection_name})
-    print(f"Pinned List: {resp_pin_list}")
-
-    resp_ipfs_cids = PinataUploader.get_all_ipfs_file_cids(ipfs_hash=folder_cid)
-    print(f"IPFS File CIDs: {resp_ipfs_cids}")
-
-
-
-# IMAGE_FOLDER_PATHWAY = "./images/"
-# PinataUploader = PinataPy(os.getenv("PINATA_API_KEY"), os.getenv("PINATA_API_SECRET"))
-# PinataUploader.set_ipfs_cid_output_filename(os.getenv("CIDS_TXT_FILENAME"))
-
-# resp_pin_files = PinataUploader.pin_file_to_ipfs(IMAGE_FOLDER_PATHWAY, ipfs_destination_path="doggie-walk-nfts")
-# print(resp_pin_files)
-# file_or_folder_cid = resp_pin_files['IpfsHash']
-
-# resp_pin_list = PinataUploader.pin_list({"status": "pinned", "metadata[name]": "doggie-walk-nfts"})
-# print(resp_pin_list)
-
-# response_get_all_ipfs_file_cids = PinataUploader.get_all_ipfs_file_cids(file_or_folder_cid)
-# print(response_get_all_ipfs_file_cids)
-
-
-# resp2 = PinataUploader.pin_file_to_ipfs("/home/fvs/solidity-scripts/nft-ipfs/images/shiba-inu2.png", ipfs_destination_path="doggie2-nfts")
-# print(resp2)
-
-# resp_pin_list1 = PinataUploader.pin_list({"status": "pinned"})
-# print(resp_pin_list1)
-
-# remove_hash = 'QmZYJxJ1m98JXi47pgjXcivhruy298YMXz75r8qXYh1Koy'
-# print(PinataUploader.remove_pin_from_ipfs(remove_hash))
-
-
-# https://gateway.pinata.cloud/ipfs/QmQomR1JgXuz4kiG56vwhrzcMekbzXmWWwpPPFNWb7kgW5
-# https://gateway.pinata.cloud/ipfs/QmZYJxJ1m98JXi47pgjXcivhruy298YMXz75r8qXYh1Koy?filename=main-doggies
-# https://gateway.pinata.cloud/ipfs/QmSsYRx3LpDAb1GZQm7zZ1AuHZjfbPkD6J7s9r41xu1mf8?filename=pug.png
-
