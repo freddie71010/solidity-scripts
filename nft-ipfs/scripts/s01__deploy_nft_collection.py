@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def deploy_collection(dogTokenURI_cids_filename: str):
-    (_, dog_token_uris_list) = get_dog_cids(dogTokenURI_cids_filename, limit_collection=True)
+    (_, dog_token_uris_list) = get_dog_cids(dogTokenURI_cids_filename, set_collection_size_limit=True)
     
     account = get_account(env="MM1")
     # account = get_account(index=1)
@@ -24,13 +24,13 @@ def deploy_collection(dogTokenURI_cids_filename: str):
     return doggie_nft_collectible
 
 
-
 def _chainlink_subscription_warning():
     print_line("Deployed Doggie NFT Collectible!")
     print("")
     print_line("WARNING", char="*")
     print_line("MAKE SURE YOU ADD NEWLY DEPLOYED CONTRACT TO CHAINLINK SUBSCRIPTION - https://vrf.chain.link/", char="*")
     input("Add address as a 'Consumer' to VRF Chainlink Manager to continue. Push 'Enter' when ready:")
+
 
 def main():
     deploy_collection(

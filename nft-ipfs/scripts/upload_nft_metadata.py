@@ -21,8 +21,8 @@ class MetadataCollection:
         self.collection_network: str = collection_network 
 
     def create_collection_metadata(self):
-        print("Creating metadata JSON files...")
-        (doggie_dict, _) = get_dog_cids(self.dogTokenURI_cids_filename, limit_collection=True)
+        print(f"Creating metadata JSON files for *{self.collection_network}* network...")
+        (doggie_dict, _) = get_dog_cids(self.dogTokenURI_cids_filename, set_collection_size_limit=True)
 
         metadata_file_pathway: Path = Path(f"./metadata/{self.collection_network}/")
         metadata_file_pathway.mkdir(parents=True, exist_ok=True)
@@ -68,6 +68,3 @@ def main():
     )
     metadata_collection.create_collection_metadata()
     metadata_collection.upload_metadata()
-
-if __name__ == "__main__":
-    main()

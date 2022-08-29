@@ -146,7 +146,7 @@ def listen_for_event(brownie_contract, event, timeout=60, poll_interval=2):
     print_line(f"Timeout of {timeout} seconds reached, no event found.")
     return {"event": None}
 
-def get_dog_cids(cids_filename: str, limit_collection: bool = False):
+def get_dog_cids(cids_filename: str, set_collection_size_limit: bool = False):
     """
     Parses newly generated CIDs.txt file for all Doggie CIDs to be used 
     """
@@ -157,7 +157,7 @@ def get_dog_cids(cids_filename: str, limit_collection: bool = False):
                 data: list = line.strip().split("|")
                 if data[1] == "dir":
                     continue
-                if limit_collection and data[0] not in ['pug.png', 'st-bernard.png', 'shiba-inu.png']:
+                if set_collection_size_limit and data[0] not in ['pug.png', 'st-bernard.png', 'shiba-inu.png']:
                     continue
                 dog_token_uris[data[0]] = data[2]
 
