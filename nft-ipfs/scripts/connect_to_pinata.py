@@ -171,6 +171,23 @@ class PinataPy:
         response: requests.Response = requests.delete(url=url, data={}, headers=headers)
         return self._error(response) if not response.ok else {"message": "Removed"}
     
+    def pin_json_to_ipfs(self, json_to_pin: tp.Any, options: tp.Optional[OptionsDict] = None) -> ResponsePayload:
+        """ pin provided JSON
+        
+        More: https://docs.pinata.cloud/pinata-api/pinning/pin-json
+        """
+        url: str = API_ENDPOINT + "pinning/pinJSONToIPFS"
+        headers: Headers = self._auth_headers
+        headers["Content-Type"] = "application/json"
+        payload: ResponsePayload = {"pinataContent": json_to_pin}
+        if options is not None:
+            if "pinataMetadata" in options:
+                payload["pinataMetadata"] = options["pinataMetadata"]
+            if "pinataOptions" in options:
+                payload["pinataOptions"] = options["pinataOptions"]
+        response: requests.Response = requests.post(url=url, json=payload, headers=headers)
+        return response.json() if response.ok else self._error(response)  # type: ignore
+    
     def download_ipfs_file_cids(self, ipfs_hash: str = None) -> dict:
         """ 
         
@@ -215,26 +232,9 @@ class PinataPy:
             return self.ipfs_files
         else:
             return self._error(response)
-
-    def pin_json_to_ipfs(self, json_to_pin: tp.Any, options: tp.Optional[OptionsDict] = None) -> ResponsePayload:
-        """ pin provided JSON
-        
-        More: https://docs.pinata.cloud/pinata-api/pinning/pin-json
-        """
-        url: str = API_ENDPOINT + "pinning/pinJSONToIPFS"
-        headers: Headers = self._auth_headers
-        headers["Content-Type"] = "application/json"
-        payload: ResponsePayload = {"pinataContent": json_to_pin}
-        if options is not None:
-            if "pinataMetadata" in options:
-                payload["pinataMetadata"] = options["pinataMetadata"]
-            if "pinataOptions" in options:
-                payload["pinataOptions"] = options["pinataOptions"]
-        response: requests.Response = requests.post(url=url, json=payload, headers=headers)
-        return response.json() if response.ok else self._error(response)  # type: ignore
-
-
-    def _print_ipfs_details(self):
+    
+    def _print_ipfs_details(self) -> None:
+        """ Prints a summary of the IPFS File details """
         print("FILE CIDS", "="*50)
         length: int = 30
         for k,v in self.ipfs_files.items():
