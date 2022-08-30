@@ -24,22 +24,24 @@ class MetadataCollection:
         print(f"Creating metadata JSON files for *{self.collection_network}* network...")
         (doggie_dict, _) = get_dog_cids(self.dogTokenURI_cids_filename, set_collection_size_limit=True)
 
-        metadata_file_pathway: Path = Path(f"./metadata/{self.collection_network}/")
-        metadata_file_pathway.mkdir(parents=True, exist_ok=True)
+        metadata_basedir: Path = Path(f"./metadata/{self.collection_network}/")
+        metadata_basedir.mkdir(parents=True, exist_ok=True)
 
-        for i, doggie in enumerate(doggie_dict.keys(),start=1):
-            num: str = f"0{str(i)}" if i < 10 else f"{str(i)}"
-            metadata_file_name: str = f"{num}_{doggie.split('.')[0]}.json"
-            
-            if Path(str(metadata_file_pathway) + "/" + metadata_file_name).exists():
-                raise FileExistsError(f"{metadata_file_name} already found, delete it to overwrite!")
+        
+
+        for i, doggie in enumerate(doggie_dict.keys(), start=1):
+            # num: str = f"0{str(i)}" if i < 10 else f"{str(i)}"
+            # metadata_file_name: str = f"{num}_{doggie.split('.')[0]}.json"
+            metadata_file_name: str = f"{doggie}.json"
+            metadata_pathway: str = str(metadata_basedir) + "/" + metadata_file_name
+            if Path(metadata_pathway).exists():
+                raise FileExistsError(f"'{metadata_pathway}' already found, delete it to overwrite!")
             else:
                 print(f"Creating Metadata file: {metadata_file_name}", end="")
                 md = metadata_json = metadata_template.template
 
-                ipfs_img_hash = doggie_dict[doggie]
-                image_uri = f"ipfs://{ipfs_img_hash}"
-                doggie_name = doggie.split(".")[0].replace("-", " ").title()
+                image_uri = f"ipfs://{doggie_dict[doggie]}"
+                doggie_name = doggie.replace("-", " ").title()
                 
                 md['name'] = doggie_name
                 md['description'] = f"A {doggie_name} dog!"
@@ -48,8 +50,8 @@ class MetadataCollection:
                 md['attributes']['level'] = (len(doggie_name) % 10) + 1
 
                 # Save metadata to JSON file
-                with open(f"{metadata_file_pathway}/{metadata_file_name}", "w") as f:
-                    json.dump(metadata_json, f)
+                with open(f"{metadata_basedir}/{metadata_file_name}", "w") as f:
+                    json.dump(metadata_json, f, indent=4)
                 
                 print(" -> Done!")
                 
