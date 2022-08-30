@@ -12,6 +12,7 @@ from brownie import (
 )
 # from web3 import Web3, eth
 import requests
+import json
 import time
 import os
 
@@ -148,21 +149,24 @@ def listen_for_event(brownie_contract, event, timeout=60, poll_interval=2):
 
 def get_dog_cids(cids_filename: str, set_collection_size_limit: bool = False):
     """
-    Parses newly generated CIDs.txt file for all Doggie CIDs to be used 
+    Parses IPFS Summary file for Dog CIDs 
     """
     try: 
-        with open(os.getcwd() + f"/uploaded_file_cids/{cids_filename}", "r") as f:
+        with open(os.getcwd() + f"/ipfs_cids_summary/{cids_filename}", "r") as f:
             dog_token_uris: dict = {}
-            for line in f:
-                data: list = line.strip().split("|")
-                if data[1] == "dir":
+            cids_summary_file: dict = json.load(f)
+            for dog, dog_details in cids_summary_file.items():
+                if dog_details["FileType"] == "dir":
                     continue
-                if set_collection_size_limit and data[0] not in ['pug.png', 'st-bernard.png', 'shiba-inu.png']:
+                if set_collection_size_limit and dog not in ['pug', 'st-bernard', 'shiba-inu']:
                     continue
-                dog_token_uris[data[0]] = data[2]
+                dog_token_uris[dog] = dog_details["Hash"]
 
         dog_token_uris_list: list = list(dog_token_uris.values())
-        print("INFO: NFT Collection limited to 3 Doggies.")
+        if set_collection_size_limit:
+            print("INFO: NFT Collection limited to 3 default Doggies.")
+        else:
+            print(f"INFO: NFT Collection has a length of {len(dog_token_uris_list)} Doggies.")
         print(dog_token_uris)
         print(dog_token_uris_list)
         return (dog_token_uris, dog_token_uris_list)

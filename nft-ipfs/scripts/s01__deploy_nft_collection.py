@@ -5,8 +5,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def deploy_collection(dogTokenURI_cids_filename: str):
-    (_, dog_token_uris_list) = get_dog_cids(dogTokenURI_cids_filename, set_collection_size_limit=True)
+def deploy_collection(dogTokenURI_cids_filename: str, set_collection_size_limit: bool = False):
+    (_, dog_token_uris_list) = get_dog_cids(
+        dogTokenURI_cids_filename, 
+        set_collection_size_limit=set_collection_size_limit
+        )
     
     account = get_account(env="MM1")
     # account = get_account(index=1)
@@ -34,6 +37,7 @@ def _chainlink_subscription_warning():
 
 def main():
     deploy_collection(
-        dogTokenURI_cids_filename = os.getenv("CIDS_SUMMARY_FILE")
+        dogTokenURI_cids_filename = os.getenv("CIDS_SUMMARY_FILE"),
+        set_collection_size_limit = True
     )
     print("end")
