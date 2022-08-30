@@ -63,7 +63,7 @@ class MetadataCollection:
 
 def main():
     metadata_collection = MetadataCollection(        
-        dogTokenURI_cids_filename = os.getenv("CIDS_TXT_FILENAME"),
+        dogTokenURI_cids_filename = os.getenv("CIDS_SUMMARY_FILE"),
         # collection_network = 'rinkeby'
     )
     metadata_collection.create_collection_metadata()

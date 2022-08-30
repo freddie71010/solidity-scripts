@@ -34,6 +34,6 @@ def _chainlink_subscription_warning():
 
 def main():
     deploy_collection(
-        dogTokenURI_cids_filename = os.getenv("CIDS_TXT_FILENAME")
+        dogTokenURI_cids_filename = os.getenv("CIDS_SUMMARY_FILE")
     )
     print("end")
