@@ -4,8 +4,10 @@ Code modified from: https://github.com/Vourhey/pinatapy
 from unicodedata import name
 import requests
 import os
+import json
 import typing as tp
 import time
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -35,14 +37,16 @@ class PinataPy:
         
         if collection_name is None or "" or len(collection_name) < 1:
             raise ValueError
-        self.collection_name = collection_name
-        self.ipfs_cid_file = f"{collection_name}_CIDs.txt"
-        self.existing_ipfs_hash_bool = True if ipfs_hash else False
+        self.collection_name: str = collection_name
+        self.ipfs_files: dict = {}
+        self.ipfs_local_filename: dict = f"{collection_name}_CIDs.json"
         self.ipfs_hash: str = ipfs_hash
+        self.existing_ipfs_hash_bool: bool = True if ipfs_hash else False
+
         if self.existing_ipfs_hash_bool:
-            print(f"Using existing collection at CID: {self.ipfs_hash}")
+            print(f"Pulling data on existing collection CID: {self.ipfs_hash}...")
         else:
-            print(f"Creating a new collection...")
+            print(f"Creating a collection called '{self.collection_name}'...")
 
 
     @staticmethod
@@ -129,9 +133,15 @@ class PinataPy:
                 headers["pinataOptions"] = options["pinataOptions"]
         response: requests.Response = requests.post(url=url, files=files, headers=headers)
         if response.ok:
-            self.existing_ipfs_hash_bool = False
+            if response.json().get('isDuplicate') == True:
+                print("WARNING: Uploaded files already exist on IPFS! Double check Pinata Cloud for correct collection name.")
+                self.existing_ipfs_hash_bool = True
+            else:
+                print(f"INFO: Saved new data to IPFS Hash: {response.json()['IpfsHash']}")
+                self.existing_ipfs_hash_bool = False
+            
             self.ipfs_hash = response.json()['IpfsHash']
-            print("Saved new IPFS Hash.")
+            
         return response.json() if response.ok else self._error(response)  # type: ignore
 
 
@@ -161,37 +171,48 @@ class PinataPy:
         response: requests.Response = requests.delete(url=url, data={}, headers=headers)
         return self._error(response) if not response.ok else {"message": "Removed"}
     
-    def get_all_ipfs_file_cids(self, ipfs_hash: str = None) -> dict:
+    def download_ipfs_file_cids(self, ipfs_hash: str = None) -> dict:
         """ 
         
         Scans the inputted IPFS hash for nested folders/files to identify all 
-        the associated CIDs in that nested structure and create output .txt file
-        with the name, file type, and CID of each file.
+        the associated CIDs in that nested structure and create output JSON file
+        with associated details.
 
         Returns: Dictionary of all File names to their corresponding Hash/CID
         """
         url: str = 'https://dweb.link/api/v0/ls'
         ipfs_hash_arg = ipfs_hash if ipfs_hash else self.ipfs_hash
         params: dict = {'arg': ipfs_hash_arg}
-        print("Sending request...")
+        print("Downloading IPFS file data...")
         try:
             response: requests.Response = requests.get(url=url, params=params)
         except Exception as e:
             print(e)
         time.sleep(2)
         if response.ok:
-            file_cids: dict = {}
             resp_ipfs_files = response.json()['Objects'][0]['Links'] if response.ok else self._error(
                 response)  # type: ignore
             # TODO: If output files exists, clear the contents before writing to it.
-            print("FILE CIDS", "="*50)
+            
             for file in resp_ipfs_files:
                 dir: bool = True if file['Size'] == 0 else False  # checks to see if file is a Directory
-                self._print_ipfs_details(file, dir)
-                file_cids[file['Name']] =file['Hash']
+                
+                d: dict = self.ipfs_files
+                name: str = file['Name'].split(".")[0]
+                d[name]: dict = file
+                d[name]["FileType"]: str = 'dir' if file['Size'] == 0 else file['Name'].split(".")[-1]
                 if dir:
-                    self.get_all_ipfs_file_cids(file['Hash'])
-            return file_cids
+                    self.download_ipfs_file_cids(d[name]['Hash'])
+            
+            # Save metadata to JSON file
+            cid_pathway: Path = Path(f"./ipfs_cids_summary/")
+            cid_pathway.mkdir(parents=True, exist_ok=True)
+            with open(f"{cid_pathway}/{self.ipfs_local_filename}", "w") as f:
+                json.dump(self.ipfs_files, f, indent=4)
+            
+            self._print_ipfs_details()
+            print(f"Download complete! IPFS file data saved to: '{cid_pathway}/{self.ipfs_local_filename}'")
+            return self.ipfs_files
         else:
             return self._error(response)
 
@@ -213,13 +234,11 @@ class PinataPy:
         return response.json() if response.ok else self._error(response)  # type: ignore
 
 
-    def _print_ipfs_details(self, file: dict, dir: bool, length: int = 30):
-        file_type = file['Name'].split(".")[-1] if not dir else "dir"
-        print(file['Name'], file_type, file['Hash'], sep="|",
-              file=open(f"uploaded_file_cids/{self.ipfs_cid_file}", "a")
-        )
-        
-        length = (length - 5) if dir else length
-        filename = f"{file['Name']} {'(dir)' if dir else ''}"
-        print(f"{filename}{(length-len(filename))*' '}: {file['Hash']}")
-    
+    def _print_ipfs_details(self):
+        print("FILE CIDS", "="*50)
+        length: int = 30
+        for k,v in self.ipfs_files.items():
+            if v['FileType'] == "dir":
+                continue
+            filename: str = k
+            print(f"{filename}{(length-len(filename))*' '}: {v['Hash']}")
