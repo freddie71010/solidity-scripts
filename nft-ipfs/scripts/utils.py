@@ -1,20 +1,11 @@
-from brownie import (
-    network,
-    accounts,
-    config,
-    chain,
-    Contract,
-    AggregatorV3Mock,
-    VRFCoordinatorV2Mock,
-    chain,
-    web3,
-
-)
-# from web3 import Web3, eth
-import requests
 import json
-import time
 import os
+import time
+import requests
+from brownie import (AggregatorV3Mock, Contract, VRFCoordinatorV2Mock,
+                     accounts, chain, config, network, web3)
+
+from scripts.connect_to_pinata import PinataPy, ResponsePayload
 
 DECIMALS = 8
 STARTING_PRICE = 200_000_000_000  # == 2000e8 == 2,000
@@ -172,3 +163,38 @@ def get_dog_cids(cids_filename: str, set_collection_size_limit: bool = False):
         return (dog_token_uris, dog_token_uris_list)
     except FileNotFoundError as e:
         print(e)
+
+
+def upload_files_to_ipfs(
+        folder_pathway: str, 
+        collection_name: str, 
+        pinata_api_key: str, 
+        pinata_api_secret: str) -> None:
+    """ Runs three functions:
+    1. Uploads a folder containing files to IPFS via PinataPy. 
+    2. Pins the folder to the user's pinned list.
+    3. Retrieves a list of all uploaded files' IPFS data (excludes nested directories).
+
+    Args:
+        folder_pathway (str): Location of folder to upload to IPFS
+        collection_name (str): Folder name of uploaded folder as displayed on Pinata Cloud UI
+        pinata_api_key (str): User API Key
+        pinata_api_secret (str): User Secret Key
+    """
+
+    PinataUploader = PinataPy(pinata_api_key, pinata_api_secret, collection_name)
+    resp_pin_files: ResponsePayload = PinataUploader.pin_file_to_ipfs(
+        folder_pathway, 
+        ipfs_destination_path=collection_name, 
+        save_absolute_paths=False
+    )
+    print(f"Result: {resp_pin_files}")
+
+    if resp_pin_files.get('isDuplicate') == False:
+        resp_pin_list: ResponsePayload = PinataUploader.pin_list(
+            {"status": "pinned", "metadata[name]": collection_name}
+        )
+        print(f"Pinned List: {resp_pin_list}")
+
+    resp_ipfs_cids: dict = PinataUploader.download_ipfs_file_cids()
+    print(f"IPFS File CIDs: {resp_ipfs_cids}")

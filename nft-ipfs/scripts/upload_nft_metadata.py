@@ -1,11 +1,12 @@
 import json
-from brownie import config, network, Contract, DoggieWalkNFT
-from scripts.utils import get_account, print_line, listen_for_event, get_name_of_breed, get_dog_cids
-from scripts.connect_to_pinata import PinataPy
 import os
-from metadata import metadata_template
 from pathlib import Path
+
+from brownie import Contract, DoggieWalkNFT, config, network
 from dotenv import load_dotenv
+from metadata import metadata_template
+
+from scripts.utils import get_dog_cids, upload_files_to_ipfs
 
 load_dotenv()
 
@@ -36,7 +37,7 @@ class MetadataCollection:
             print("-> All files removed.")
                 
         metadata_basedir.mkdir(parents=True, exist_ok=True)
-        self.metadata_basedir = metadata_basedir
+        self.metadata_basedir = metadata_basedir  # Set base directory path
 
         for i, doggie in enumerate(doggie_dict.keys(), start=1):
             # num: str = f"0{str(i)}" if i < 10 else f"{str(i)}"
@@ -61,26 +62,9 @@ class MetadataCollection:
                 
         print("All metadata JSON files saved!")
 
-    def upload_metadata(self, image_pathway: str, collection_name: str, pinata_api_key: str, pinata_api_secret: str):
-            # customize
-            image_pathway = self.metadata_basedir
-            if image_pathway is None or image_pathway == "":
-                raise Exception
-
-            PinataUploader = PinataPy(pinata_api_key, pinata_api_secret, collection_name)
-            resp_pin_files: ResponsePayload = PinataUploader.pin_file_to_ipfs(
-                image_pathway,
-                ipfs_destination_path=collection_name, 
-                save_absolute_paths=False
-            )
-            print(f"Result: {resp_pin_files}")
-
-            if resp_pin_files.get('isDuplicate') == False:
-                resp_pin_list: ResponsePayload = PinataUploader.pin_list({"status": "pinned", "metadata[name]": collection_name})
-                print(f"Pinned List: {resp_pin_list}")
-
-            resp_ipfs_cids: dict = PinataUploader.download_ipfs_file_cids()
-            print(f"IPFS File CIDs: {resp_ipfs_cids}")
+    def upload_metadata(self, **kwargs) -> None:
+        """ Pass-through function to upload_files_to_ipfs() """
+        upload_files_to_ipfs(**kwargs)
 
 
 def main():
@@ -90,7 +74,7 @@ def main():
     )
     metadata_collection.create_collection_metadata(overwrite=True)
     metadata_collection.upload_metadata(
-        image_pathway = None, 
+        folder_pathway = str(metadata_collection.metadata_basedir), 
         collection_name = os.getenv("COLLECTION_NAME") + "_metadata", 
         pinata_api_key = os.getenv("PINATA_API_KEY"),
         pinata_api_secret = os.getenv("PINATA_API_SECRET")
