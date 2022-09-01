@@ -138,31 +138,31 @@ def listen_for_event(brownie_contract, event, timeout=60, poll_interval=2):
     print_line(f"Timeout of {timeout} seconds reached, no event found.")
     return {"event": None}
 
-def get_dog_cids(cids_filename: str, set_collection_size_limit: bool = False):
+def read_cid_summary_file(cids_filename: str, set_collection_size_limit: bool = False) -> (dict, list):
     """
-    Parses IPFS Summary file for Dog CIDs 
+    Opens IPFS Summary file and returns only Dog associated data (excludes directories).
     """
     try: 
         with open(os.getcwd() + f"/ipfs_cids_summary/{cids_filename}", "r") as f:
-            dog_token_uris: dict = {}
             cids_summary_file: dict = json.load(f)
-            for dog, dog_details in cids_summary_file.items():
-                if dog_details["FileType"] == "dir":
-                    continue
+            for dog in list(cids_summary_file):
                 if set_collection_size_limit and dog not in ['pug', 'st-bernard', 'shiba-inu']:
+                    del cids_summary_file[dog]
                     continue
-                dog_token_uris[dog] = dog_details["Hash"]
+                if cids_summary_file[dog]["FileType"] == "dir":
+                    del cids_summary_file[dog]
+                    continue
 
-        dog_token_uris_list: list = list(dog_token_uris.values())
+        dog_uris_list: list = [cids_summary_file[dog]['Hash'] for dog in cids_summary_file.keys()]
         if set_collection_size_limit:
             print("INFO: NFT Collection limited to 3 default Doggies.")
         else:
-            print(f"INFO: NFT Collection has a length of {len(dog_token_uris_list)} Doggies.")
-        print(dog_token_uris)
-        print(dog_token_uris_list)
-        return (dog_token_uris, dog_token_uris_list)
+            print(f"INFO: NFT Collection has a length of {len(dog_uris_list)} Doggies.")
+        # print(dog_token_uris)
+        # print(dog_token_uris_list)
+        return (cids_summary_file, dog_uris_list)
     except FileNotFoundError as e:
-        print(e)
+        raise(e)
 
 
 def upload_files_to_ipfs(

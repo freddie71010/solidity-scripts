@@ -1,12 +1,12 @@
 from brownie import config, network, DoggieWalkNFT
-from .utils import get_account, print_line, get_publish_source, get_dog_cids
+from .utils import get_account, print_line, get_publish_source, read_cid_summary_file
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 def deploy_collection(dogTokenURI_cids_filename: str, set_collection_size_limit: bool = False):
-    (_, dog_token_uris_list) = get_dog_cids(
+    (_, dog_token_uris_list) = read_cid_summary_file(
         dogTokenURI_cids_filename, 
         set_collection_size_limit=set_collection_size_limit
         )

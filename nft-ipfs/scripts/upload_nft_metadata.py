@@ -6,7 +6,7 @@ from brownie import Contract, DoggieWalkNFT, config, network
 from dotenv import load_dotenv
 from metadata import metadata_template
 
-from scripts.utils import get_dog_cids, upload_files_to_ipfs
+from scripts.utils import read_cid_summary_file, upload_files_to_ipfs
 
 load_dotenv()
 
@@ -24,7 +24,7 @@ class MetadataCollection:
 
     def create_collection_metadata(self, overwrite: bool = False):
         print(f"Creating metadata JSON files for *{self.collection_network}* network...")
-        (doggie_dict, _) = get_dog_cids(self.dogTokenURI_cids_filename, set_collection_size_limit=True)
+        (doggie_dict, _) = read_cid_summary_file(self.dogTokenURI_cids_filename, set_collection_size_limit=True)
 
         # Check local folder and files
         metadata_basedir: Path = Path(f"./metadata/{self.collection_network}/")
