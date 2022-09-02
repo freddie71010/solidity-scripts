@@ -42,7 +42,7 @@ def main():
 
     else:
         print("Deploying a new contract...")
-        deploy_collection(dogTokenURI_cids_filename=os.getenv("CIDS_SUMMARY_FILE"))
+        deploy_collection(dogTokenURI_cids_filename=os.getenv("CIDS_IMAGES_FILE"))
         create_doggie_nft()
     print("end")
 
