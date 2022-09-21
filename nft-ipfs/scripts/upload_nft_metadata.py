@@ -45,7 +45,7 @@ class MetadataCollection:
             metadata_file_name: str = f"{doggie}.json"
             print(f"Creating Metadata file #{i}: {metadata_file_name}", end="")
             md = metadata_json = metadata_template.template
-            image_uri = f"ipfs://{doggie_dict[doggie]}"
+            image_uri = f"ipfs://{doggie_dict[doggie]['Hash']}"
             doggie_name = doggie.replace("-", " ").title()
             
             md['name'] = doggie_name

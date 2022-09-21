@@ -37,7 +37,7 @@ def _chainlink_subscription_warning():
 
 def main():
     deploy_collection(
-        dogTokenURI_cids_filename = os.getenv("CIDS_IMAGES_FILE"),
+        dogTokenURI_cids_filename = os.getenv("CIDS_METADATA_FILE"),
         set_collection_size_limit = True
     )
     print("end")

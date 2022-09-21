@@ -13,7 +13,7 @@ def upload_images(**kwargs) -> None:
 def main():
     upload_images(
         folder_pathway = "./images/", 
-        collection_name = os.getenv("COLLECTION_NAME"), 
+        collection_name = os.getenv("COLLECTION_NAME") + "_images", 
         pinata_api_key = os.getenv("PINATA_API_KEY"),
         pinata_api_secret = os.getenv("PINATA_API_SECRET")
     )

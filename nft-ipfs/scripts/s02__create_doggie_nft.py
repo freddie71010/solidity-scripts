@@ -29,21 +29,23 @@ def create_doggie_nft(*args):
 
 def main():
     existing_collection = True
-    collection_address = os.getenv("EXISTING_CONTRACT")
     collection_network = "rinkeby"
+    number_to_mint = 5
     
     if existing_collection is True:    
         if network.show_active() != collection_network:
             network.disconnect()
             network.connect(collection_network)
-        existing_contract = Contract.from_explorer(collection_address)
+        existing_contract = Contract.from_explorer(os.getenv("EXISTING_CONTRACT"))
         print(f"Connected to existing contract: {existing_contract.address}")
-        create_doggie_nft(existing_contract)
+        for _ in range(number_to_mint):
+            create_doggie_nft(existing_contract)
 
     else:
         print("Deploying a new contract...")
-        deploy_collection(dogTokenURI_cids_filename=os.getenv("CIDS_IMAGES_FILE"))
-        create_doggie_nft()
+        deploy_collection(dogTokenURI_cids_filename = os.getenv("CIDS_METADATA_FILE"))
+        for _ in range(number_to_mint):
+            create_doggie_nft()
     print("end")
 
     

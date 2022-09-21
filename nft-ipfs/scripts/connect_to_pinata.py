@@ -192,7 +192,7 @@ class PinataPy:
         """ 
         
         Scans the inputted IPFS hash for nested folders/files to identify all 
-        the associated CIDs in that nested structure and create output JSON file
+        the associated CIDs in that nested structure and create a local JSON file
         with associated details.
 
         Returns: Dictionary of all File names to their corresponding Hash/CID
