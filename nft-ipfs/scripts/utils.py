@@ -33,7 +33,7 @@ def get_publish_source():
 
 
 def get_name_of_breed(breed_number):
-    switch = {0: "PUG", 1: "SHIBA_INU", 2: "ST_BERNARD"}
+    switch = {0: "PUG", 1: "SHIBA_INU", 2: "ST_BERNARD", 3: "SHIBA_INU_HAT"}
     return switch[breed_number]
 
 

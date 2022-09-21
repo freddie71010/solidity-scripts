@@ -18,24 +18,25 @@ contract DoggieWalkNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
     enum Breed {
         PUG,
         SHIBA_INU,
-        ST_BERNARD
+        ST_BERNARD,
+        SHIBA_INU_HAT
     }
     
     // Chainlink VRF Variables
     VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
-    // TODO: Privatize variable
-    bytes32 public immutable i_gasLane;
-    uint32 public immutable i_subscriptionId;
-    uint32 public immutable i_callbackGasLimit;
+    bytes32 private immutable i_gasLane;
+    uint32 private immutable i_subscriptionId;
+    uint32 private immutable i_callbackGasLimit;
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
     uint32 private constant NUM_WORDS = 2;
 
     // NFT Variables
-    Counters.Counter public tokenIdCounter;
-    uint256 public s_mintFee = 0.01 ether;
-    uint256 constant MAX_CHANCE_VALUE = 100;
-    string[3] internal s_dogTokenURIs;
+    Counters.Counter internal tokenIdCounter;
+    uint256 internal s_mintFee = 0.01 ether;
+    string[4] internal s_dogTokenURIs;
     bool private s_initialized;
+    // Default chance array based on dog order of 'Breed' enum
+    uint8[4] internal s_chanceArray = [10, 30, 95, 100];
 
     // VRF Helpers
     mapping(uint256 => address) public s_requestIdToSender;
@@ -43,13 +44,15 @@ contract DoggieWalkNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
     // Events
     event NftRequested(uint256 indexed requestId, address requester);
     event NftMinted(address minter, uint256 tokenId, Breed breed);
+    event MintFeeChanged(uint256 oldFee, uint256 newFee);
+    event ChanceArrayChanged(uint8[4] oldChanceArray, uint8[4] newChanceArray);
 
     constructor(
         address _vrfCoordinatorV2,
         bytes32 _gasLane,   // keyhash
         uint32 _callbackGasLimit,
         uint32 _subscriptionId,
-        string[3] memory dogTokenURIs
+        string[4] memory dogTokenURIs
     ) ERC721("Doggie Walk", "DW") VRFConsumerBaseV2(_vrfCoordinatorV2) {
         i_vrfCoordinator = VRFCoordinatorV2Interface(_vrfCoordinatorV2);
         i_gasLane = _gasLane;
@@ -79,7 +82,7 @@ contract DoggieWalkNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
         // assign the NFT a tokenId
         uint256 newTokenId = tokenIdCounter.current();
         tokenIdCounter.increment();
-        uint256 moddedRng = randomWords[0] % 100;
+        uint256 moddedRng = randomWords[0] % s_chanceArray[s_chanceArray.length-1];
         Breed breed = getBreedFromModdedRng(moddedRng);
         _safeMint(dogOwner, newTokenId);
         // set the tokenURI of Dog
@@ -87,29 +90,16 @@ contract DoggieWalkNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
         emit NftMinted(dogOwner, newTokenId, breed);
     }
 
-    function getChanceArray() public pure returns (uint256[3] memory) {
-        // 0 - 9 = st bernard
-        // 10 - 59 = pug
-        // 30 - 99 = shiba inu
-        return [10, 30, MAX_CHANCE_VALUE];
-    }
-
-    function getBreedFromModdedRng(uint256 moddedRng) public pure returns(Breed) {
-        uint256 cumulativeSum = 0;
-        uint256[3] memory chanceArray = getChanceArray();
-        for (uint256 i=0; i < chanceArray.length; i++) {
-            if (moddedRng >= cumulativeSum && moddedRng < cumulativeSum + chanceArray[i]) {
-                // 0 = st bernard
-                // 1 = pug
-                // 2 = shiba inu
+    function getBreedFromModdedRng(uint256 moddedRng) public view returns(Breed) {
+        for (uint256 i=0; i < s_chanceArray.length; i++) {
+            if (moddedRng < s_chanceArray[i]) {
                 return Breed(i);
             }
-            cumulativeSum = cumulativeSum + chanceArray[i];
         }
         revert RangeOutOfBounds();
     }
 
-    function _initializeContract(string[3] memory dogTokenUris) private {
+    function _initializeContract(string[4] memory dogTokenUris) private {
         if (s_initialized) {
             revert AlreadyInitialized();
         }
@@ -125,21 +115,41 @@ contract DoggieWalkNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
     }
     
     // getter functions
-    function getDogTokenUris(uint256 index) public view returns (string memory) {
-        return s_dogTokenURIs[index];
+    function getAllDogTokenUris() external view returns (string[4] memory) {
+        return s_dogTokenURIs;
     }
 
-    function getTokenCounter() public view returns (uint256) {
+    function getTokenCounter() external view returns (uint256) {
         return tokenIdCounter.current();
     }
 
-    function getMintFee() public view returns (uint256) {
+    function getChanceArray() public view returns (uint8[4] memory) {
+        return s_chanceArray;
+    }
+
+    function getMintFee() external view returns (uint256) {
         return s_mintFee;
     }
 
     // setter functions
-    function _setMintFee(uint256 _newFee) public onlyOwner {
+    function setMintFee(uint256 _newFee) public onlyOwner {
+        require(_newFee > 0, "new mint fee must be > 0");
+        require(_newFee != s_mintFee, "new mint fee must be different than the previous mint fee");
+        uint256 oldFee = s_mintFee; 
         s_mintFee = _newFee;
+        emit MintFeeChanged(oldFee, _newFee);
+    }
+
+    function setChanceArray(uint8[4] memory _newChanceArray) public onlyOwner {
+        uint8[4] memory oldChanceArray = getChanceArray();
+        s_chanceArray = _newChanceArray;
+        emit ChanceArrayChanged(oldChanceArray, _newChanceArray);
+    }
+
+    function setToOriginalChanceArray() public onlyOwner {
+        uint8[4] memory oldChanceArray = getChanceArray();
+        s_chanceArray = [10, 30, 95, 100];
+        emit ChanceArrayChanged(oldChanceArray, s_chanceArray);
     }
 
 }
