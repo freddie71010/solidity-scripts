@@ -153,14 +153,12 @@ def read_cid_summary_file(cids_filename: str, set_collection_size_limit: bool = 
                     del cids_summary_file[dog]
                     continue
 
-        dog_uris_list: list = [cids_summary_file[dog]['Hash'] for dog in cids_summary_file.keys()]
+        doggie_cids_list: list = [cids_summary_file[dog]['Hash'] for dog in cids_summary_file.keys()]
         if set_collection_size_limit:
             print("INFO: NFT Collection limited to 3 default Doggies.")
         else:
-            print(f"INFO: NFT Collection has a length of {len(dog_uris_list)} Doggies.")
-        # print(dog_token_uris)
-        # print(dog_token_uris_list)
-        return (cids_summary_file, dog_uris_list)
+            print(f"INFO: NFT Collection has a length of {len(doggie_cids_list)} Doggies.")
+        return (cids_summary_file, doggie_cids_list)
     except FileNotFoundError as e:
         raise(e)
 

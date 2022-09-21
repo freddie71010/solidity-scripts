@@ -5,9 +5,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def deploy_collection(dogTokenURI_cids_filename: str, set_collection_size_limit: bool = False):
-    (_, dog_token_uris_list) = read_cid_summary_file(
-        dogTokenURI_cids_filename, 
+def deploy_collection(doggiewalk_cids_filename: str, set_collection_size_limit: bool = False):
+    (_, doggie_cids_list) = read_cid_summary_file(
+        doggiewalk_cids_filename, 
         set_collection_size_limit=set_collection_size_limit
         )
     
@@ -19,7 +19,7 @@ def deploy_collection(dogTokenURI_cids_filename: str, set_collection_size_limit:
         config["networks"][network.show_active()]["keyhash_v2"],
         config["networks"][network.show_active()]["callback_gas_limit_v2"],
         config["networks"][network.show_active()]["subscription_id"],
-        dog_token_uris_list,
+        doggie_cids_list,
         {"from": account},
         publish_source=get_publish_source()
     )
@@ -37,7 +37,7 @@ def _chainlink_subscription_warning():
 
 def main():
     deploy_collection(
-        dogTokenURI_cids_filename = os.getenv("CIDS_METADATA_FILE"),
+        doggiewalk_cids_filename = os.getenv("CIDS_METADATA_FILE"),
         set_collection_size_limit = True
     )
     print("end")

@@ -43,7 +43,7 @@ def main():
 
     else:
         print("Deploying a new contract...")
-        deploy_collection(dogTokenURI_cids_filename = os.getenv("CIDS_METADATA_FILE"))
+        deploy_collection(doggiewalk_cids_filename = os.getenv("CIDS_METADATA_FILE"))
         for _ in range(number_to_mint):
             mint_doggie_nft()
     print("end")

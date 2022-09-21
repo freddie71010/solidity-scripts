@@ -22,7 +22,7 @@ def test_can_create_doggiewalknft():
         config["networks"][network.show_active()]["keyhash_v2"],
         config["networks"][network.show_active()]["callback_gas_limit_v2"],
         config["networks"][network.show_active()]["subscription_id"],
-        [], # dog_token_uris_list,
+        [], # doggie_cids_list,
         {"from": account},
     )
 

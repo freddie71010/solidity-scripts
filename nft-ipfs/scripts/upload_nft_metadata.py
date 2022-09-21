@@ -12,19 +12,19 @@ load_dotenv()
 
 
 class MetadataCollection:
-    def __init__(self, dogTokenURI_cids_filename: str, collection_network: str = network.show_active()):
+    def __init__(self, dogToken_cids_filename: str, collection_network: str = network.show_active()):
         """
         Args:
-            dogTokenURI_cids_filename (str): Filename that contains all CIDs.
+            dogToken_cids_filename (str): Filename that contains all CIDs.
             collection_network (str): Network name of metadata files. Var used in pathway location of files.
         """
-        self.dogTokenURI_cids_filename: str = dogTokenURI_cids_filename
+        self.dogToken_cids_filename: str = dogToken_cids_filename
         self.collection_network: str = collection_network 
         self.metadata_basedir: str = ""
 
     def create_collection_metadata(self, overwrite: bool = False):
         print(f"Creating metadata JSON files for *{self.collection_network}* network...")
-        (doggie_dict, _) = read_cid_summary_file(self.dogTokenURI_cids_filename, set_collection_size_limit=True)
+        (doggie_dict, _) = read_cid_summary_file(self.dogToken_cids_filename, set_collection_size_limit=True)
 
         # Check local folder and files
         metadata_basedir: Path = Path(f"./metadata/{self.collection_network}/")
@@ -45,12 +45,12 @@ class MetadataCollection:
             metadata_file_name: str = f"{doggie}.json"
             print(f"Creating Metadata file #{i}: {metadata_file_name}", end="")
             md = metadata_json = metadata_template.template
-            image_uri = f"ipfs://{doggie_dict[doggie]['Hash']}"
+            image_cid = f"ipfs://{doggie_dict[doggie]['Hash']}"
             doggie_name = doggie.replace("-", " ").title()
             
             md['name'] = doggie_name
             md['description'] = f"A {doggie_name} dog!"
-            md['image'] = image_uri
+            md['image'] = image_cid
             md['attributes']['trait_type'] = ["cuteness", "happiness", "anger"][len(doggie_name) % 3]
             md['attributes']['level'] = (len(doggie_name) % 10) + 1
 
@@ -69,7 +69,7 @@ class MetadataCollection:
 
 def main():
     metadata_collection = MetadataCollection(        
-        dogTokenURI_cids_filename = os.getenv("CIDS_IMAGES_FILE"),
+        dogToken_cids_filename = os.getenv("CIDS_IMAGES_FILE"),
         # collection_network = 'rinkeby'
     )
     metadata_collection.create_collection_metadata(overwrite=True)
