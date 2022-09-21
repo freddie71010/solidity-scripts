@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def create_doggie_nft(*args):
+def mint_doggie_nft(*args):
     account = get_account(env="MM1")
     doggie_nft_collection = args[0] if args else DoggieWalkNFT[-1]
     print_line(f"Doggie Collectible contract address: {doggie_nft_collection.address}")
@@ -39,13 +39,13 @@ def main():
         existing_contract = Contract.from_explorer(os.getenv("EXISTING_CONTRACT"))
         print(f"Connected to existing contract: {existing_contract.address}")
         for _ in range(number_to_mint):
-            create_doggie_nft(existing_contract)
+            mint_doggie_nft(existing_contract)
 
     else:
         print("Deploying a new contract...")
         deploy_collection(dogTokenURI_cids_filename = os.getenv("CIDS_METADATA_FILE"))
         for _ in range(number_to_mint):
-            create_doggie_nft()
+            mint_doggie_nft()
     print("end")
 
     
