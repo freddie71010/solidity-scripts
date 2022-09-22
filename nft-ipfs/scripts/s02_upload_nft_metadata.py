@@ -2,7 +2,7 @@ import json
 import os
 from pathlib import Path
 
-from brownie import Contract, DoggieWalkNFT, config, network
+from brownie import network
 from dotenv import load_dotenv
 from metadata import metadata_template
 

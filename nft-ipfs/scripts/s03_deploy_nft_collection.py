@@ -1,7 +1,10 @@
-from brownie import config, network, DoggieWalkNFT
-from .utils import get_account, print_line, get_publish_source, read_cid_summary_file
 import os
+
+from brownie import DoggieWalkNFT, config, network
 from dotenv import load_dotenv
+
+from .utils import (get_account, get_publish_source, print_line,
+                    read_cid_summary_file)
 
 load_dotenv()
 
@@ -35,3 +38,4 @@ def _chainlink_subscription_warning():
 def main():
     deploy_collection(doggiewalk_cids_filename = os.getenv("CIDS_METADATA_FILE"))
     print("end")
+

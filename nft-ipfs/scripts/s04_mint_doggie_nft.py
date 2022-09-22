@@ -1,8 +1,10 @@
-from brownie import config, network, Contract, DoggieWalkNFT
-from .utils import get_account, print_line, listen_for_event, get_name_of_breed
-from .s01__deploy_nft_collection import deploy_collection
 import os
+
+from brownie import Contract, DoggieWalkNFT
 from dotenv import load_dotenv
+
+from .s03_deploy_nft_collection import deploy_collection
+from .utils import get_account, get_name_of_breed, listen_for_event, print_line
 
 load_dotenv()
 
