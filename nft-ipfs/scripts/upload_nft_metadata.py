@@ -24,7 +24,7 @@ class MetadataCollection:
 
     def create_collection_metadata(self, overwrite: bool = False):
         print(f"Creating metadata JSON files for *{self.collection_network}* network...")
-        (doggie_dict, _) = read_cid_summary_file(self.dogToken_cids_filename, set_collection_size_limit=True)
+        (doggie_dict, _) = read_cid_summary_file(self.dogToken_cids_filename)
 
         # Check local folder and files
         metadata_basedir: Path = Path(f"./metadata/{self.collection_network}/")

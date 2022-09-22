@@ -19,8 +19,8 @@ def test_can_create_doggiewalknft():
 
     doggie_nft_collectible = DoggieWalkNFT.deploy(
         get_contract("vrfcoordinator"),
-        config["networks"][network.show_active()]["keyhash_v2"],
-        config["networks"][network.show_active()]["callback_gas_limit_v2"],
+        config["networks"][network.show_active()]["keyhash"],
+        config["networks"][network.show_active()]["callback_gas_limit"],
         config["networks"][network.show_active()]["subscription_id"],
         [], # doggie_cids_list,
         {"from": account},

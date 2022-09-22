@@ -231,7 +231,7 @@ class PinataPy:
             print(f"Download complete! IPFS file data saved to: '{cid_pathway}/{self.ipfs_local_filename}'")
             return self.ipfs_files
         else:
-            return self._error(response)
+            raise Exception(self._error(response))
     
     def _print_ipfs_details(self) -> None:
         """ Prints a summary of the IPFS File details """

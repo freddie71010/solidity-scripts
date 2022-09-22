@@ -33,7 +33,7 @@ def get_publish_source():
 
 
 def get_name_of_breed(breed_number):
-    switch = {0: "PUG", 1: "SHIBA_INU", 2: "ST_BERNARD", 3: "SHIBA_INU_HAT"}
+    switch = {0: "PUG", 1: "ST_BERNARD", 2: "SHIBA_INU", 3: "SHIBA_INU_HAT"}
     return switch[breed_number]
 
 
@@ -138,26 +138,20 @@ def listen_for_event(brownie_contract, event, timeout=60, poll_interval=2):
     print_line(f"Timeout of {timeout} seconds reached, no event found.")
     return {"event": None}
 
-def read_cid_summary_file(cids_filename: str, set_collection_size_limit: bool = False) -> (dict, list):
+def read_cid_summary_file(cids_filename: str) -> (dict, list):
     """
     Opens IPFS Summary file and returns only Dog associated data (excludes directories).
     """
+    dog_order: list = ['pug', 'st-bernard', 'shiba-inu', 'shiba-inu-hat']
     try: 
         with open(os.getcwd() + f"/ipfs_cids_summary/{cids_filename}", "r") as f:
             cids_summary_file: dict = json.load(f)
             for dog in list(cids_summary_file):
-                if set_collection_size_limit and dog not in ['pug', 'st-bernard', 'shiba-inu']:
-                    del cids_summary_file[dog]
-                    continue
                 if cids_summary_file[dog]["FileType"] == "dir":
                     del cids_summary_file[dog]
                     continue
-
-        doggie_cids_list: list = [cids_summary_file[dog]['Hash'] for dog in cids_summary_file.keys()]
-        if set_collection_size_limit:
-            print("INFO: NFT Collection limited to 3 default Doggies.")
-        else:
-            print(f"INFO: NFT Collection has a length of {len(doggie_cids_list)} Doggies.")
+        doggie_cids_list: list = [cids_summary_file[dog]['Hash'] for dog in dog_order]
+        print(f"INFO: NFT Collection has a length of {len(doggie_cids_list)} Doggies.")
         return (cids_summary_file, doggie_cids_list)
     except FileNotFoundError as e:
         raise(e)

@@ -5,19 +5,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def deploy_collection(doggiewalk_cids_filename: str, set_collection_size_limit: bool = False):
-    (_, doggie_cids_list) = read_cid_summary_file(
-        doggiewalk_cids_filename, 
-        set_collection_size_limit=set_collection_size_limit
-        )
+def deploy_collection(doggiewalk_cids_filename: str):
+    (_, doggie_cids_list) = read_cid_summary_file(doggiewalk_cids_filename)
     
     account = get_account(env="MM1")
     # account = get_account(index=1)
 
     doggie_nft_collectible = DoggieWalkNFT.deploy(
-        config["networks"][network.show_active()]["vrfcoordinator_v2"],
-        config["networks"][network.show_active()]["keyhash_v2"],
-        config["networks"][network.show_active()]["callback_gas_limit_v2"],
+        config["networks"][network.show_active()]["vrfcoordinator"],
+        config["networks"][network.show_active()]["keyhash"],
+        config["networks"][network.show_active()]["callback_gas_limit"],
         config["networks"][network.show_active()]["subscription_id"],
         doggie_cids_list,
         {"from": account},
@@ -36,8 +33,5 @@ def _chainlink_subscription_warning():
 
 
 def main():
-    deploy_collection(
-        doggiewalk_cids_filename = os.getenv("CIDS_METADATA_FILE"),
-        set_collection_size_limit = True
-    )
+    deploy_collection(doggiewalk_cids_filename = os.getenv("CIDS_METADATA_FILE"))
     print("end")

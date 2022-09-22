@@ -17,8 +17,8 @@ contract DoggieWalkNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
     // Dog Types
     enum Breed {
         PUG,
-        SHIBA_INU,
         ST_BERNARD,
+        SHIBA_INU,
         SHIBA_INU_HAT
     }
     
@@ -36,7 +36,7 @@ contract DoggieWalkNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
     string[4] internal s_dogTokenURIs;
     bool private s_initialized;
     // Default chance array based on dog order of 'Breed' enum
-    uint8[4] internal s_chanceArray = [10, 30, 95, 100];
+    uint8[4] internal s_chanceArray = [30, 50, 95, 100];
 
     // VRF Helpers
     mapping(uint256 => address) public s_requestIdToSender;
