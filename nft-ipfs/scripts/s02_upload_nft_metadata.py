@@ -68,10 +68,8 @@ class MetadataCollection:
 
 
 def main():
-    metadata_collection = MetadataCollection(        
-        dogToken_cids_filename = os.getenv("CIDS_IMAGES_FILE"),
-        # collection_network = 'rinkeby'
-    )
+    metadata_collection = MetadataCollection(dogToken_cids_filename = os.getenv("CIDS_IMAGES_FILE"))
+    
     metadata_collection.create_collection_metadata(overwrite=True)
     metadata_collection.upload_metadata(
         folder_pathway = str(metadata_collection.metadata_basedir), 

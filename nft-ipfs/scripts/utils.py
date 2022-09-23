@@ -1,9 +1,8 @@
 import json
 import os
 import time
-import requests
-from brownie import (AggregatorV3Mock, Contract, VRFCoordinatorV2Mock,
-                     accounts, chain, config, network, web3)
+from brownie import (Contract, VRFCoordinatorV2Mock,
+                     accounts, config, network, web3 as brownie_web3)
 
 from scripts.connect_to_pinata import PinataPy, ResponsePayload
 
@@ -17,14 +16,13 @@ LOCAL_BLOCKCHAIN_ENVIRONMENTS = NON_FORKED_LOCAL_BLOCKCHAIN_ENVIRONMENTS + [
     "matic-fork",
 ]
 
-contract_to_mock = {
-    "eth_usd_price_feed": AggregatorV3Mock,
-    "vrfcoordinator": VRFCoordinatorV2Mock,
+CONTRACTS_TO_MOCK = {
+    "vrfcoordinatorV2": VRFCoordinatorV2Mock,
 }
 
 # ---------------------------------------------------------------------------
 
-def get_publish_source():
+def get_publish_source() -> bool:
     if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS \
     or not os.getenv("ETHERSCAN_TOKEN"):
         return False
@@ -32,36 +30,40 @@ def get_publish_source():
         return True
 
 
-def get_name_of_breed(breed_number):
+def get_name_of_breed(breed_number) -> str:
     switch = {0: "PUG", 1: "ST_BERNARD", 2: "SHIBA_INU", 3: "SHIBA_INU_HAT"}
     return switch[breed_number]
 
 
-def print_line(string, length=100, char='='):
+def print_line(string, length=100, char='=') -> None:
     print(f"{string} {(length-len(string))*char}")
 
 
-def get_account(index=None, brownie_id=None, env=None):
+def get_account(index: int = None, brownie_id: int = None, env:str = None):
     # Gets acc from pre-configured Brownie accs based on the passed index
     if index:
         return accounts[index]
+    
     # Gets acc from Brownie's list of accs based on passed ID
     if brownie_id:
         return accounts.load(brownie_id)
+    
     # Gets acc from the passed private key env
     if env:
         accounts.add(config["wallets"][env])
+    
     # Gets the first acc from pre-configured Brownie accs while on a local or forked blockchain
     if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
         return accounts[0]
+    
     # Gets the first private key acc from env variables when on a mainnet/testnet
     return accounts.add(config["wallets"]["MM1"])
 
 
-def get_contract(contract_name):
+def get_contract(contract_name: str):
     """
     If on a local network, deploy a mock contract and return that contract.
-    If on a mainnet/testnet network, return the deployed the contract.
+    If on a mainnet/testnet network, return the deployed contract.
 
         Args:
             contract_name (string)
@@ -69,7 +71,7 @@ def get_contract(contract_name):
         Returns:
             brownie.network.contract.ProjectContract: the most recently deployed version of the contract
     """
-    contract_type = contract_to_mock[contract_name]
+    contract_type = CONTRACTS_TO_MOCK[contract_name]
     # Local Blockchains
     if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
         if len(contract_type) <= 0:
@@ -87,25 +89,20 @@ def get_contract(contract_name):
 def deploy_mocks():
     account = get_account()
     
-    print_line(f"The active network is {network.show_active()}", char='-')
-    print_line("Deploying mocks...")
+    print_line(f"Deploying mocks on network: {network.show_active()}", char="-")
     
-    print("Deploying Mock ETH-USD Price Feed...")
-    mock_price_feed = AggregatorV3Mock.deploy(
-        DECIMALS, STARTING_PRICE, 
-        {"from": account}
-        )
-    print(f"Deployed to {mock_price_feed.address}")
-
-    print("Deploying Mock VRFCoordinatorV2...")
+    print("Deploying Mock VRFCoordinatorV2...", end="")
     mock_vrf_coordinator = VRFCoordinatorV2Mock.deploy(
-        web3.Web3.toWei(0.1, "ether"), 1000000000, 
+        brownie_web3.toWei(0.1, "ether"), 
+        1_000_000_000, 
         {"from": account}
     )
-    print(f"Deployed to {mock_vrf_coordinator.address}")
+    # vrfCoordinatorV2Mock = accounts[0].deploy(VRFCoordinatorV2Mock, 0.1, 0.1)
+    mock_vrf_coordinator.createSubscription()
+    mock_vrf_coordinator.fundSubscription(1, 10_000_000_000)
+    print(f"Address: {mock_vrf_coordinator.address}")
     
     print_line("Mocks deployed!", char='-')
-
 
 
 def listen_for_event(brownie_contract, event, timeout=60, poll_interval=2):
@@ -120,7 +117,7 @@ def listen_for_event(brownie_contract, event, timeout=60, poll_interval=2):
         poll_interval ([int]): How often to call your node to check for events.
         Defaults to 2 seconds.
     """
-    web3_contract = web3.eth.contract(
+    web3_contract = brownie_web3.eth.contract(
         address=brownie_contract.address, abi=brownie_contract.abi
     )
     start_time = time.time()
@@ -137,6 +134,7 @@ def listen_for_event(brownie_contract, event, timeout=60, poll_interval=2):
         current_time = time.time()
     print_line(f"Timeout of {timeout} seconds reached, no event found.")
     return {"event": None}
+
 
 def read_cid_summary_file(cids_filename: str) -> (dict, list):
     """
