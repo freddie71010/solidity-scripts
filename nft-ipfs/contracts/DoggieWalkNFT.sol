@@ -62,9 +62,9 @@ contract DoggieWalkNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
     }
 
     function requestDoggie() public payable returns (uint256 requestId) {
-        // if (msg.value <= s_mintFee) {
-        //     revert NeedMoreETHSent();
-        // }
+        if (msg.value <= s_mintFee) {
+            revert NeedMoreETHSent();
+        }
         requestId = i_vrfCoordinator.requestRandomWords(
             i_gasLane, // price per gas
             i_subscriptionId,
