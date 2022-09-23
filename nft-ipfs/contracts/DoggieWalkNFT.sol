@@ -133,7 +133,6 @@ contract DoggieWalkNFT is ERC721URIStorage, VRFConsumerBaseV2, Ownable {
 
     // setter functions
     function setMintFee(uint256 _newFee) public onlyOwner {
-        require(_newFee > 0, "new mint fee must be > 0");
         require(_newFee != s_mintFee, "new mint fee must be different than the previous mint fee");
         uint256 oldFee = s_mintFee; 
         s_mintFee = _newFee;

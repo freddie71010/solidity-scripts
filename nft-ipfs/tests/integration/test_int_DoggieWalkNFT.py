@@ -18,11 +18,11 @@ def test_can_create_doggiewalknft():
         pytest.skip("Only for integration testing")
 
     doggie_nft_collectible = DoggieWalkNFT.deploy(
-        get_contract("vrfcoordinator"),
+        get_contract("vrfcoordinatorV2"),
         config["networks"][network.show_active()]["keyhash"],
         config["networks"][network.show_active()]["callback_gas_limit"],
         config["networks"][network.show_active()]["subscription_id"],
-        [], # doggie_cids_list,
+        ['1','2','3','4'], # doggie_cids_list,
         {"from": account},
     )
 
