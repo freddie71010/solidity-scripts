@@ -1,0 +1,11 @@
+__pycache__
+.env
+.history
+.hypothesis/
+build/
+reports/
+venv*/
+.idea/
+
+ipfs_cids_summary/
+metadata/
