@@ -1,9 +1,9 @@
 <br/>
 <p align="center">
-<img src="https://raw.githubusercontent.com/freddie71010/solidity-scripts/main/images/pug.png" width="200" alt="NFT Pug">
-<img src="https://raw.githubusercontent.com/freddie71010/solidity-scripts/main/images/st-bernard.png" width="200" alt="NFT St.Bernard">
-<img src="https://raw.githubusercontent.com/freddie71010/solidity-scripts/main/images/shiba-inu.png" width="200" alt="NFT Shiba Inu">
-<img src="https://raw.githubusercontent.com/freddie71010/solidity-scripts/main/images/shiba-inu-hat.png" width="200" alt="NFT Shiba Inu Hat">
+<img src="https://raw.githubusercontent.com/freddie71010/solidity-scripts/nft-ipfs/images/pug.png" width="200" alt="NFT Pug">
+<img src="https://raw.githubusercontent.com/freddie71010/solidity-scripts/nft-ipfs/images/st-bernard.png" width="200" alt="NFT St.Bernard">
+<img src="https://raw.githubusercontent.com/freddie71010/solidity-scripts/nft-ipfs/images/shiba-inu.png" width="200" alt="NFT Shiba Inu">
+<img src="https://raw.githubusercontent.com/freddie71010/solidity-scripts/nft-ipfs/images/shiba-inu-hat.png" width="200" alt="NFT Shiba Inu Hat">
 </p>
 <br/>
 
