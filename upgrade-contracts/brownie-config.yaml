@@ -1,0 +1,31 @@
+dependencies:
+  - smartcontractkit/chainlink-brownie-contracts@0.4.1
+  - OpenZeppelin/openzeppelin-contracts@4.6.0
+reports:
+    exclude_paths:
+        - contracts/mocks/**/*.*
+        - contracts/SafeMath.sol
+dotenv: .env
+compiler:
+  solc:
+    remappings:
+      - "@chainlink-brownie-contracts=smartcontractkit/chainlink-brownie-contracts@0.4.1"
+      - "@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.6.0"
+networks:
+  default: development
+
+goerli:
+    link_token: "0x326C977E6efc84E512bB9C30f76E30c160eD06FB"
+    vrfcoordinator: "0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D"
+    keyhash: "0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15" # 30gwei
+    callback_gas_limit: 200_000
+    subscription_id: ${CL_SUBSCRIPTION_ID}
+    fee: 100000000000000000
+    verify: True
+    explorer_api: "https://api-goerli.etherscan.io/api"
+
+wallets:
+  MM1: ${MM1_PRIVATE_KEY}
+  MM2: ${MM2_PRIVATE_KEY}
+api_keys:
+  etherscan: ${ETHERSCAN_TOKEN}
