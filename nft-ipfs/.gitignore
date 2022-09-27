@@ -4,5 +4,8 @@ __pycache__
 .hypothesis/
 build/
 reports/
-uploaded_file_cids/
 venv*/
+.idea/
+
+ipfs_cids_summary/
+metadata/
