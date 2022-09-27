@@ -7,20 +7,20 @@
 </p>
 <br/>
 
-# Create an NFT collection!
-An ERC721 NFT project written in solidity and deployed using brownie (python). A user can mint a truly random Doggie NFT (a truly random number is provided by Chainlink's VRF which is then used with the rarity of each Doggie of appearing). The owner of the smart contract can modify the Minting Rarity numbers (using the *setChanceArray()* function on the contract).
+# Mint a Random NFT from a Collection!
+An ERC721 NFT project written in solidity and deployed using brownie (python). A user can mint a random Doggie NFT (where the randomness factor is provided by Chainlink's VRF) from a newly created Doggie NFT Collection consisting of several unique NFTs. The minting rarity of each Doggie is based on a Chance Array that the owner of the deployed smart contract can modify if they so desired using the *setChanceArray()* function of the contract.
 
-## Doggie Minting Rarity
+## Default Doggie Minting Rarity
 - Pug = 30%
 - St Bernard = 20%
 - Shiba Inu = 45%
 - Shiba Inu Hat = 5%
 
-# Prerequistes
-- Ensure `images/` folder contains 4 Doggie image files.
-- Fill out `.env` file with necessary environment variables.
-# There are four steps that need to be followed in order:
-- `s01_upload_nft_images.py` - Uploads all images in 'images/' folder to IPFS via Pinata Cloud and downloads a CID Summary JSON file of results.
+# Prerequisites
+- Ensure the `images/` folder contains 4 Doggie image files.
+- Fill out the `.env` template file with necessary environment variables.
+# Four steps need to be followed in order:
+- `s01_upload_nft_images.py` - Uploads all images in the 'images/' folder to IPFS via Pinata Cloud and downloads a CID Summary JSON file of results.
 - `s02_upload_nft_metadata.py` - Creates metadata JSON files based on uploaded image CIDs and then uploads all metadata files to IPFS via Pinata Cloud. Also downloads a CID Summary JSON file of results.
 - `s03_deploy_nft_collection.py` - Deploys "Doggie Walk" NFT Collection to the desired network.
 - `s04_mint_doggie_nft.py` - Interacts with the deployed NFT contract and mints X number of NFTs.
