@@ -10,6 +10,9 @@ Be sure to check out the branches of this repo (besides the 'main' branch) for a
 ### Mint a Random NFT from a Collection! (Folder: [nft-ipfs](https://github.com/freddie71010/solidity-scripts/edit/main/nft-ipfs/))
 An ERC721 NFT project written in solidity and deployed using brownie (python). A user can mint a random Doggie NFT (where the randomness factor is provided by Chainlink's VRF) from a newly created Doggie NFT Collection consisting of several unique NFTs. The minting rarity of each Doggie is based on a Chance Array that the owner of the deployed smart contract can modify if they so desired using the setChanceArray() function of the contract.
 
+### Upgradable Smart Contracts (Folder: [upgrade-contracts](https://github.com/freddie71010/solidity-scripts/edit/main/upgrade-contracts/))
+An implementation of upgrading smart contracts using the *transparent proxy pattern* as seen by OpenZeppelin. These smart contracts also implement a **ProxyAdmin** contract as the main admin control source for all future proxy contracts. The Deploy script upgrades an implementation contract two times (for a total of 3 unique `Box` contracts).
+
 ### ERC-20 Token Staking DApp (Folder: [staking-ui](https://github.com/freddie71010/solidity-scripts/edit/main/staking-ui/))
 #### DApp Features:
 - Stake $RT tokens into contract
