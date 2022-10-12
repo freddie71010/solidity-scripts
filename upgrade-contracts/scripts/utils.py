@@ -139,14 +139,14 @@ def listen_for_event(brownie_contract, event, timeout=60, poll_interval=2):
     return {"event": None}
 
 
-def encode_function_data(initializer=None, *args):
+def encode_function_data(initializer=None, *args) -> bytes:
     """Encodes the function call so we can work with an initializer.
     Args:
         initializer ([brownie.network.contract.ContractTx], optional):
-        The initializer function we want to call. Example: `box.store`.
-        Defaults to None.
+            The initializer function we want to call. Example: `box.store`.
+            Defaults to None.
         args (Any, optional):
-        The arguments to pass to the initializer function
+            The arguments to pass to the initializer function
     Returns:
         [bytes]: Return the encoded bytes.
     """
@@ -163,10 +163,25 @@ def upgrade_contract(
     initializer=None,
     *args,
 ):
+    """Upgrades a contract to a new version.
+    Args:
+        account ([brownie.network.account.Account])
+        proxy_contract ([brownie.network.contract.ProjectContract])
+        new_implementation_address (str):
+            New address of implementation contract.
+        proxy_admin ([brownie.network.contract.ProjectContract], optional)
+        initializer ([brownie.network.contract.ContractTx], optional):
+            The initializer function we want to call. Example: `box.store`.
+            Defaults to None.
+        args (Any, optional):
+            The arguments to pass to the initializer function
+    Returns:
+        [bytes]: Return the encoded bytes.
+    """
     # Admin is a ProxyAdmin contract
     if proxy_admin:
         if initializer:
-            encode_initializer_call = encode_function_data(initializer, *args)
+            encode_initializer_call: bytes = encode_function_data(initializer, *args)
             txn = proxy_admin.upgradeAndCall(
                 proxy_contract.address,
                 new_implementation_address,
@@ -180,7 +195,7 @@ def upgrade_contract(
     # Admin is a regular old wallet address
     else:
         if initializer:
-            encode_initializer_call = encode_function_data(initializer, *args)
+            encode_initializer_call: bytes = encode_function_data(initializer, *args)
             txn = proxy_contract.upgradeToAndCall(
                 new_implementation_address,
                 encode_initializer_call,
