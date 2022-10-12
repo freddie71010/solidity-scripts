@@ -2,7 +2,7 @@ from scripts.utils import get_account, encode_function_data
 from brownie import Box, ProxyAdmin, TransparentUpgradeableProxy, Contract
 
 
-def test_proxy_delegate_calls():
+def test_proxy_delegate_calls_box():
     # Arrange
     account = get_account()
     box_contract = Box.deploy({"from": account})
