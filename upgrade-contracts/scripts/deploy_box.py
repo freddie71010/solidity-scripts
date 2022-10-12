@@ -148,7 +148,7 @@ def upgrade_to_boxV3():
     print(proxy_box_v3_contract.getNumArray())
     proxy_box_v3_contract.increment({"from": account})
     print(proxy_box_v3_contract.getNumArray())
-    tx = proxy_box_v3_contract.increment({"from": account})
+    proxy_box_v3_contract.increment({"from": account})
 
     # Print out event 'ArrayTotalBeforeReset' since 'ArrayMaxFive' modifier condition has been met.
     try:
